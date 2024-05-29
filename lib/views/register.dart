@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/register_view_model.dart';
 
@@ -12,6 +13,8 @@ class registerPage extends StatelessWidget {
           centerTitle: true,
           title: Text('Parking App'),
         ),
+
+
         body: Padding(
           padding: const EdgeInsets.all(10),
           child: SingleChildScrollView(
@@ -21,6 +24,8 @@ class registerPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+
+                    //register title
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -37,12 +42,16 @@ class registerPage extends StatelessWidget {
                         ),
                       ],
                     ),
+
+                    //-------input field start ------
+                    //full name input field
                     SizedBox(height: 25),
                     TextField(
                       controller: viewModel.full_nameController,
                       decoration: InputDecoration(
                         labelText: 'Full Name',
                         labelStyle: TextStyle(color: Colors.white),
+                        errorText: viewModel.full_name_validate,
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                         ),
@@ -50,13 +59,19 @@ class registerPage extends StatelessWidget {
                           borderSide: BorderSide(color: Colors.blueAccent),
                         ),
                       ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp('[a-zA-Z ]')),
+                      ],
                     ),
+
+                    //username input field
                     SizedBox(height: 25),
                     TextField(
                       controller: viewModel.usernameController,
                       decoration: InputDecoration(
                         labelText: 'Username:',
                         labelStyle: TextStyle(color: Colors.white),
+                        errorText: viewModel.username_validate,
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                         ),
@@ -65,12 +80,15 @@ class registerPage extends StatelessWidget {
                         ),
                       ),
                     ),
+
+                    //contact input field
                     SizedBox(height: 25),
                     TextField(
                       controller: viewModel.contact_numberController,
                       decoration: InputDecoration(
                         labelText: 'Contact Number:',
                         labelStyle: TextStyle(color: Colors.white),
+                        errorText: viewModel.contact_number_validate,
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                         ),
@@ -78,13 +96,19 @@ class registerPage extends StatelessWidget {
                           borderSide: BorderSide(color: Colors.blueAccent),
                         ),
                       ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],//input format
                     ),
+
+                    //email
                     SizedBox(height: 25),
                     TextField(
                       controller: viewModel.email_addressController,
                       decoration: InputDecoration(
                         labelText: 'Email Address:',
                         labelStyle: TextStyle(color: Colors.white),
+                        errorText: viewModel.email_address_validate,
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                         ),
@@ -93,12 +117,15 @@ class registerPage extends StatelessWidget {
                         ),
                       ),
                     ),
+
+                    //password
                     SizedBox(height: 25),
                     TextField(
                       controller: viewModel.passwordController,
                       decoration: InputDecoration(
                         labelText: 'Create Password:',
                         labelStyle: TextStyle(color: Colors.white),
+                        errorText: viewModel.password_validate,
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                         ),
@@ -109,12 +136,15 @@ class registerPage extends StatelessWidget {
                       ),
                       obscureText: true,
                     ),
+
+                    //confirm password
                     SizedBox(height: 25),
                     TextField(
                       controller: viewModel.confirm_passwordController,
                       decoration: InputDecoration(
                         labelText: 'Confirmation Password:',
                         labelStyle: TextStyle(color: Colors.white),
+                        errorText: viewModel.confirm_password_validate,
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                         ),
@@ -125,6 +155,8 @@ class registerPage extends StatelessWidget {
                       ),
                       obscureText: true,
                     ),
+
+
                     SizedBox(height: 25),
                     SizedBox(
                       width: double.infinity,
@@ -146,6 +178,8 @@ class registerPage extends StatelessWidget {
                         ),
                       ),
                     ),
+
+
                     SizedBox(height: 16.0),
                     Align(
                       alignment: Alignment.center,
@@ -162,6 +196,8 @@ class registerPage extends StatelessWidget {
                         ),
                       ),
                     ),
+
+
                     SizedBox(height: 25),
                     Text(
                       'Registered Users:',
@@ -171,6 +207,8 @@ class registerPage extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+
+                    //------for test to display the data
                     ...viewModel.users.map((user) => ListTile(
                       title: Text(user.full_name, style: TextStyle(color: Colors.white)),
                       subtitle: Text(user.username, style: TextStyle(color: Colors.white)),
