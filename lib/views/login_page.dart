@@ -26,6 +26,7 @@ class SignPage extends StatelessWidget {
                     decoration: InputDecoration(
                       labelText: 'Username:',
                       labelStyle: TextStyle(color: Colors.white),
+                      errorText: viewModel.login_usernameError,
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white),
                       ),
@@ -41,6 +42,7 @@ class SignPage extends StatelessWidget {
                     decoration: InputDecoration(
                       labelText: 'Password:',
                       labelStyle: TextStyle(color: Colors.white),
+                      errorText: viewModel.login_passwordError,
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white),
                       ),
@@ -58,6 +60,8 @@ class SignPage extends StatelessWidget {
                       ),
                     ),
                   ),
+
+
                   SizedBox(height: 10),
                   if (viewModel.errorMessage != null)
                     Padding(
@@ -75,11 +79,13 @@ class SignPage extends StatelessWidget {
                         style: TextStyle(color: Colors.green),
                       ),
                     ),
+
+
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        viewModel.login();
+                        viewModel.login(context);
                       },
                       icon: Icon(Icons.login, color: Colors.white),
                       label: Text(
@@ -95,6 +101,8 @@ class SignPage extends StatelessWidget {
                       ),
                     ),
                   ),
+
+                  //divider
                   SizedBox(height: 10),
                   Row(
                     children: [
@@ -106,6 +114,8 @@ class SignPage extends StatelessWidget {
                       Expanded(child: Divider(color: Colors.blue)),
                     ],
                   ),
+
+                  //navigate page to register
                   SizedBox(height: 16.0),
                   ElevatedButton.icon(
                     onPressed: () {
@@ -127,6 +137,7 @@ class SignPage extends StatelessWidget {
                       padding: EdgeInsets.symmetric(vertical: 16.0),
                     ),
                   ),
+
                   SizedBox(height: 10),
                   Row(
                     children: [
