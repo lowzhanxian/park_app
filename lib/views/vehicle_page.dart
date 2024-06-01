@@ -33,60 +33,67 @@ class VehiclePage extends StatelessWidget {
                     itemCount: viewModel.vehicles.length,
                     itemBuilder: (context, index) {
                       Vehicle vehicle = viewModel.vehicles[index];
-                      return ListTile(
-                        title: Text(vehicle.vehiclePlateNum),
-                        subtitle: Text(vehicle.vehicleName),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.edit),
-                              onPressed: () {
-                                viewModel.vehiclePlateNumController.text = vehicle.vehiclePlateNum;
-                                viewModel.vehicleNameController.text = vehicle.vehicleName;
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: Text('Edit Vehicle'),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        TextField(
-                                          controller: viewModel.vehiclePlateNumController,
-                                          decoration: InputDecoration(labelText: 'Vehicle Plate Number'),
+                      return Card(
+                        margin: EdgeInsets.all(30),
+                        child: ListTile(
+                          leading: Icon(Icons.directions_car_sharp, size: 50, color: Colors.white),
+                          title: Text(
+                            vehicle.vehiclePlateNum,
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+                          ),
+                          subtitle: Text(vehicle.vehicleName),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit),
+                                onPressed: () {
+                                  viewModel.vehiclePlateNumController.text = vehicle.vehiclePlateNum;
+                                  viewModel.vehicleNameController.text = vehicle.vehicleName;
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: Text('Edit Vehicle'),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          TextField(
+                                            controller: viewModel.vehiclePlateNumController,
+                                            decoration: InputDecoration(labelText: 'Vehicle Plate Number'),
+                                          ),
+                                          TextField(
+                                            controller: viewModel.vehicleNameController,
+                                            decoration: InputDecoration(labelText: 'Vehicle Name'),
+                                          ),
+                                        ],
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text('Cancel'),
                                         ),
-                                        TextField(
-                                          controller: viewModel.vehicleNameController,
-                                          decoration: InputDecoration(labelText: 'Vehicle Name'),
+                                        TextButton(
+                                          onPressed: () {
+                                            viewModel.updateVehicle(vehicle);
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text('Save'),
                                         ),
                                       ],
                                     ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          viewModel.updateVehicle(vehicle);
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text('Save'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: () {
-                                viewModel.deleteVehicle(vehicle.id!, userId);
-                              },
-                            ),
-                          ],
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete),
+                                onPressed: () {
+                                  viewModel.deleteVehicle(vehicle.id!, userId);
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
