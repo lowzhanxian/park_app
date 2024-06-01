@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../helpers/database_help.dart';  // Updated import statement
+import 'dart:async';
 
 class RegisterViewModel extends ChangeNotifier {
   final full_nameController = TextEditingController();
@@ -9,6 +10,10 @@ class RegisterViewModel extends ChangeNotifier {
   final email_addressController = TextEditingController();
   final passwordController = TextEditingController();
   final confirm_passwordController = TextEditingController();
+
+  //call for show password
+  bool _displayPassword=false;
+  bool get displayPassword =>_displayPassword;
 
 
   List<User> _users = [];
@@ -21,6 +26,12 @@ class RegisterViewModel extends ChangeNotifier {
   String?email_address_validate;
   String?password_validate;
   String?confirm_password_validate;
+
+  //function show and close password
+  void toggleDisplayPassword() {
+    _displayPassword=!_displayPassword;
+    notifyListeners();
+  }
 
   bool _validateInputs() {
     bool isValid = true;
@@ -75,7 +86,10 @@ class RegisterViewModel extends ChangeNotifier {
       password_validate = null;
     }
 
-    if (confirm_passwordController.text != passwordController.text) {
+    if (confirm_passwordController.text.isEmpty) {
+      confirm_password_validate = 'Confirmation Password Required';
+      isValid = false;
+    } else if (confirm_passwordController.text != passwordController.text) {
       confirm_password_validate = 'Password Not Match';
       isValid = false;
     } else {
@@ -83,6 +97,20 @@ class RegisterViewModel extends ChangeNotifier {
     }
 
     notifyListeners();
+
+    if (!isValid) {
+      Timer(Duration(seconds: 3), () {
+        full_name_validate = null;
+        username_validate = null;
+        contact_number_validate = null;
+        email_address_validate = null;
+        password_validate = null;
+        confirm_password_validate=null;
+
+        notifyListeners();
+      });
+    }
+
     return isValid;
   }
 

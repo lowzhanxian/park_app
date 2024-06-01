@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';  // Import Timer
 import 'package:park_app/views/home_page.dart';
 import '../helpers/database_help.dart';
 import '../models/user.dart';
@@ -34,18 +35,25 @@ class LoginViewModel extends ChangeNotifier {
   bool _validateInputs() {
     bool isValid = true;
     if (usernameController.text.isEmpty) {
-      _login_username_error = 'Username is required';
+      _login_username_error = 'Username Required';
       isValid = false;
     } else {
       _login_username_error = null;
     }
     if (passwordController.text.isEmpty) {
-      _login_password_error = 'Password is required';
+      _login_password_error = 'Password Required';
       isValid = false;
     } else {
       _login_password_error = null;
     }
     notifyListeners();
+    if (!isValid) {
+      Timer(Duration(seconds: 5), () {
+        _login_username_error = null;
+        _login_password_error = null;
+        notifyListeners();
+      });
+    }
     return isValid;
   }
 
@@ -63,7 +71,7 @@ class LoginViewModel extends ChangeNotifier {
           _successMessage = "Login successful!";
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+            MaterialPageRoute(builder: (context) => HomePage(userId: user.id!)),
           );
         } else {
           _errorMessage = "Invalid username or password.";

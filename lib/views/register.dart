@@ -122,6 +122,7 @@ class registerPage extends StatelessWidget {
                     SizedBox(height: 25),
                     TextField(
                       controller: viewModel.passwordController,
+                      obscureText: !viewModel.displayPassword,
                       decoration: InputDecoration(
                         labelText: 'Create Password:',
                         labelStyle: TextStyle(color: Colors.white),
@@ -132,15 +133,23 @@ class registerPage extends StatelessWidget {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.blueAccent),
                         ),
-                        suffixIcon: Icon(Icons.visibility, color: Colors.white),
+                        suffixIcon:IconButton(
+                          icon: Icon(
+                            viewModel.displayPassword? Icons.visibility:Icons.visibility_off,
+                            color: Colors.white,
+                          ),
+                          onPressed: (){
+                            viewModel.toggleDisplayPassword();
+                          },
+                        )
                       ),
-                      obscureText: true,
                     ),
 
                     //confirm password
                     SizedBox(height: 25),
                     TextField(
                       controller: viewModel.confirm_passwordController,
+                      obscureText: !viewModel.displayPassword,
                       decoration: InputDecoration(
                         labelText: 'Confirmation Password:',
                         labelStyle: TextStyle(color: Colors.white),
@@ -151,9 +160,16 @@ class registerPage extends StatelessWidget {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.blueAccent),
                         ),
-                        suffixIcon: Icon(Icons.visibility, color: Colors.white),
+                        suffixIcon:IconButton(
+                          icon: Icon(
+                            viewModel.displayPassword? Icons.visibility:Icons.visibility_off,
+                            color: Colors.white,
+                          ),
+                          onPressed: (){
+                            viewModel.toggleDisplayPassword();
+                          },
+                        )
                       ),
-                      obscureText: true,
                     ),
 
 
