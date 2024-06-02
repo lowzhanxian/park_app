@@ -3,6 +3,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/user.dart';
 import '../models/vehicle.dart';
+import '../models/violation.dart';
 
 class Db_Helper {
   static final Db_Helper _instance = Db_Helper._internal();
@@ -48,7 +49,19 @@ class Db_Helper {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     ''');
-  }
+
+
+    await db.execute('''
+        CREATE TABLE violations(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          date TEXT NOT NULL,
+          path_image BLOB,
+          details_report TEXT NOT NULL,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+      ''');
+    }
 
   void _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
@@ -137,4 +150,48 @@ class Db_Helper {
       whereArgs: [id],
     );
   }
+
+  //violation method
+  //create violation_details
+  Future<int> insertViolationDetails(Violation violation) async {
+    Database db = await database;
+    return await db.insert('violation_details', violation.toMap());
+  }
+
+  //read violation_details
+  Future<List<Violation>> getViolationDetails(int userId) async {
+    Database db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'violation_details',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+    return List.generate(maps.length, (i) {
+      return Violation.fromMap(maps[i]);
+    });
+
+  }
+
+  //update violation_details
+  Future<int> updateViolationDetails(Violation violation) async {
+    Database db = await database;
+    return await db.update(
+      'violation_details',
+      violation.toMap(),
+      where: 'id = ?',
+      whereArgs: [violation.id],
+    );
+  }
+
+
+  //delete violation_details
+  Future<int> deleteViolationDetails(int id) async {
+    Database db = await database;
+    return await db.delete(
+      'violation_details',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
 }
