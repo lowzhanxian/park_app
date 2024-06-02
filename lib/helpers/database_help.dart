@@ -95,11 +95,14 @@ class Db_Helper {
   }
 
   // Vehicle methods
+
+  //vehicle insert database
   Future<int> insertVehicleDetail(Vehicle vehicle) async {
     Database db = await database;
     return await db.insert('vehicle_details', vehicle.toMap());
   }
 
+  //vehicle get vehicle database which follow user id
   Future<List<Vehicle>> getVehicleDetails(int userId) async {
     Database db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -112,6 +115,8 @@ class Db_Helper {
     });
   }
 
+
+  //update vehicle details follow userid
   Future<int> updateVehicleDetail(Vehicle vehicle) async {
     Database db = await database;
     return await db.update(
@@ -122,6 +127,8 @@ class Db_Helper {
     );
   }
 
+
+  //delete vehicle details
   Future<int> deleteVehicleDetail(int id) async {
     Database db = await database;
     return await db.delete(
