@@ -1,33 +1,22 @@
 import 'package:flutter/material.dart';
-import 'login_page.dart';
 import 'vehicle_page.dart';
-import 'settings_page.dart';
-import 'violation_page.dart';
+import 'profile_management_page.dart';
+import 'history_page.dart';
+import 'wallet_page.dart';
 
-class HomePage extends StatelessWidget {
+
+class SettingsPage extends StatelessWidget {
   final int userId;
 
   // Constructor with required userId parameter
-  HomePage({required this.userId});
+  SettingsPage({required this.userId});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Parking App'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            // Navigate to the login page on logout
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => SignPage()),
-              );
-            },
-          ),
-        ],
+        title: Text('Settings'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
@@ -35,28 +24,6 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Button for booking a parking spot
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Navigate to booking page
-                },
-                icon: Icon(Icons.local_parking, color: Colors.white),
-                label: Text(
-                  'Book a Parking Now',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                ),
-              ),
-            ),
-            SizedBox(height: 25),
             // Button for managing vehicles
             SizedBox(
               width: double.infinity,
@@ -82,19 +49,19 @@ class HomePage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 25),
-            // Button for navigating to settings
+            // Button for profile management
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => SettingsPage(userId: userId)),  // Navigate to settings page
+                    MaterialPageRoute(builder: (context) => ProfileManagementPage(userId: userId)),
                   );
                 },
-                icon: Icon(Icons.settings, color: Colors.white),
+                icon: Icon(Icons.person, color: Colors.white),
                 label: Text(
-                  'Settings',
+                  'Profile Management',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
@@ -107,17 +74,19 @@ class HomePage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 25),
-
-            // Button for viewing parking details
+            // Button for history
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // TODO: Navigate to parking details page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HistoryPage(userId: userId)),
+                  );
                 },
-                icon: Icon(Icons.info, color: Colors.white),
+                icon: Icon(Icons.history, color: Colors.white),
                 label: Text(
-                  'View Parking Details',
+                  'History',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
@@ -130,20 +99,19 @@ class HomePage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 25),
-
-            // Button for managing violations
+            // Button for wallet
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ViolationPage(userId: userId)),
+                    MaterialPageRoute(builder: (context) => WalletPage(userId: userId)),
                   );
                 },
-                icon: Icon(Icons.report, color: Colors.white),
+                icon: Icon(Icons.account_balance_wallet, color: Colors.white),
                 label: Text(
-                  'Manage Violations',
+                  'Wallet',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                   ),

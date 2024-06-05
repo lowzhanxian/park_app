@@ -11,147 +11,143 @@ class SignPage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text('Parking App'),
+          title: Text('Welcome to Parking App'),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Consumer<LoginViewModel>(
-            builder: (context, viewModel, child) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextField(
-                    controller: viewModel.usernameController,
-                    decoration: InputDecoration(
-                      labelText: 'Username:',
-                      labelStyle: TextStyle(color: Colors.white),
-                      errorText: viewModel.login_usernameError,
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blueAccent),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Consumer<LoginViewModel>(
+              builder: (context, viewModel, child) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TextField(
+                      controller: viewModel.usernameController,
+                      decoration: InputDecoration(
+                        labelText: 'Username:',
+                        labelStyle: TextStyle(color: Colors.white),
+                        errorText: viewModel.login_usernameError,
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.blueAccent),
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 25),
-                  TextField(
-                    controller: viewModel.passwordController,
-                    obscureText: !viewModel.showPassword,
-                    decoration: InputDecoration(
-                      labelText: 'Password:',
-                      labelStyle: TextStyle(color: Colors.white),
-                      errorText: viewModel.login_passwordError,
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blueAccent),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          viewModel.showPassword ? Icons.visibility : Icons.visibility_off,
-                          color: Colors.white,
+                    SizedBox(height: 25),
+                    TextField(
+                      controller: viewModel.passwordController,
+                      obscureText: !viewModel.showPassword,
+                      decoration: InputDecoration(
+                        labelText: 'Password:',
+                        labelStyle: TextStyle(color: Colors.white),
+                        errorText: viewModel.login_passwordError,
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
                         ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.blueAccent),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            viewModel.showPassword ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {
+                            viewModel.togglePasswordVisibility();
+                          },
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    if (viewModel.errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text(
+                          viewModel.errorMessage!,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    if (viewModel.successMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text(
+                          viewModel.successMessage!,
+                          style: TextStyle(color: Colors.green),
+                        ),
+                      ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
                         onPressed: () {
-                          viewModel.togglePasswordVisibility();
+                          viewModel.login(context);
                         },
-                      ),
-                    ),
-                  ),
-
-
-                  SizedBox(height: 10),
-                  if (viewModel.errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Text(
-                        viewModel.errorMessage!,
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  if (viewModel.successMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Text(
-                        viewModel.successMessage!,
-                        style: TextStyle(color: Colors.green),
-                      ),
-                    ),
-
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        viewModel.login(context);
-                      },
-                      icon: Icon(Icons.login, color: Colors.white),
-                      label: Text(
-                        'Sign In',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                        icon: Icon(Icons.login, color: Colors.white),
+                        label: Text(
+                          'Sign In',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 20),
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 20),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.blue)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text('OR', style: TextStyle(color: Colors.blue)),
+                        ),
+                        Expanded(child: Divider(color: Colors.blue)),
+                      ],
+                    ),
+                    SizedBox(height: 16.0),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => registerPage()),
+                          );
+                        },
+                        icon: Icon(Icons.person_add, color: Colors.white),
+                        label: Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                        ),
                       ),
                     ),
-                  ),
-
-                  //divider
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(child: Divider(color: Colors.blue)),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text('OR', style: TextStyle(color: Colors.blue)),
-                      ),
-                      Expanded(child: Divider(color: Colors.blue)),
-                    ],
-                  ),
-
-                  //navigate page to register
-                  SizedBox(height: 16.0),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => registerPage()),
-                      );
-                    },
-                    icon: Icon(Icons.person_add, color: Colors.white),
-                    label: Text(
-                      'Sign Up',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.blue)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text('New user have to sign up account', style: TextStyle(color: Colors.blue)),
+                        ),
+                        Expanded(child: Divider(color: Colors.blue)),
+                      ],
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                    ),
-                  ),
-
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(child: Divider(color: Colors.blue)),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text('New user have to sign up account', style: TextStyle(color: Colors.blue)),
-                      ),
-                      Expanded(child: Divider(color: Colors.blue)),
-                    ],
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
