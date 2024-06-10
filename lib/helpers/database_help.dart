@@ -22,7 +22,7 @@ class Db_Helper {
     String path = join(await getDatabasesPath(), 'app_database.db');
     return await openDatabase(
       path,
-      version: 2, // Increment version number
+      version: 5,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -50,20 +50,40 @@ class Db_Helper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS violation_details(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        car_color TEXT,
+        car_plate TEXT,
+        car_type TEXT,
+        details_report TEXT NOT NULL,
+        full_name TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    ''');
 
     await db.execute('''
-        CREATE TABLE violations(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL,
-          date TEXT NOT NULL,
-          path_image BLOB,
-          details_report TEXT NOT NULL,
-          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )
-      ''');
-    }
+      CREATE TABLE IF NOT EXISTS wallet_balance(
+        user_id INTEGER PRIMARY KEY,
+        balance REAL NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    ''');
 
-  void _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS reload_history(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        amount REAL NOT NULL,
+        date TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    ''');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('''
         CREATE TABLE IF NOT EXISTS vehicle_details(
@@ -75,6 +95,32 @@ class Db_Helper {
         )
       ''');
     }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS reload_history(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          amount REAL NOT NULL,
+          date TEXT NOT NULL,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+      ''');
+    }
+    if (oldVersion < 5) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS violation_details(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          date TEXT NOT NULL,
+          car_color TEXT,
+          car_plate TEXT,
+          car_type TEXT,
+          details_report TEXT NOT NULL,
+          full_name TEXT,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+      ''');
+    }
   }
 
   Future<void> deleteDatabase() async {
@@ -82,7 +128,6 @@ class Db_Helper {
     await databaseFactory.deleteDatabase(path);
   }
 
-  // User methods
   Future<int> insertUser(User user) async {
     Database db = await database;
     return await db.insert('users', user.toMap());
@@ -101,21 +146,41 @@ class Db_Helper {
     return null;
   }
 
+  Future<User?> getUserById(int id) async {
+    Database db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (results.isNotEmpty) {
+      return User.fromMap(results.first);
+    }
+    return null;
+  }
+
   Future<List<User>> getAllUsers() async {
     Database db = await database;
     List<Map<String, dynamic>> results = await db.query('users');
     return results.map((map) => User.fromMap(map)).toList();
   }
 
-  // Vehicle methods
+  Future<void> updateUserPassword(int userId, String newPassword) async {
+    Database db = await database;
+    await db.update(
+      'users',
+      {'password': newPassword},
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+  }
 
-  //vehicle insert database
+  // Vehicle methods
   Future<int> insertVehicleDetail(Vehicle vehicle) async {
     Database db = await database;
     return await db.insert('vehicle_details', vehicle.toMap());
   }
 
-  //vehicle get vehicle database which follow user id
   Future<List<Vehicle>> getVehicleDetails(int userId) async {
     Database db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -128,8 +193,6 @@ class Db_Helper {
     });
   }
 
-
-  //update vehicle details follow userid
   Future<int> updateVehicleDetail(Vehicle vehicle) async {
     Database db = await database;
     return await db.update(
@@ -140,8 +203,6 @@ class Db_Helper {
     );
   }
 
-
-  //delete vehicle details
   Future<int> deleteVehicleDetail(int id) async {
     Database db = await database;
     return await db.delete(
@@ -151,14 +212,12 @@ class Db_Helper {
     );
   }
 
-  //violation method
-  //create violation_details
+  // Violation methods
   Future<int> insertViolationDetails(Violation violation) async {
     Database db = await database;
     return await db.insert('violation_details', violation.toMap());
   }
 
-  //read violation_details
   Future<List<Violation>> getViolationDetails(int userId) async {
     Database db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -169,10 +228,8 @@ class Db_Helper {
     return List.generate(maps.length, (i) {
       return Violation.fromMap(maps[i]);
     });
-
   }
 
-  //update violation_details
   Future<int> updateViolationDetails(Violation violation) async {
     Database db = await database;
     return await db.update(
@@ -183,8 +240,6 @@ class Db_Helper {
     );
   }
 
-
-  //delete violation_details
   Future<int> deleteViolationDetails(int id) async {
     Database db = await database;
     return await db.delete(
@@ -194,4 +249,52 @@ class Db_Helper {
     );
   }
 
+  // Wallet balance methods
+  Future<void> updateWalletBalance(int userId, double balance) async {
+    final db = await database;
+    await db.insert(
+      'wallet_balance',
+      {'user_id': userId, 'balance': balance},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<double?> getWalletBalance(int userId) async {
+    final db = await database;
+    final result = await db.query(
+      'wallet_balance',
+      columns: ['balance'],
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+    if (result.isNotEmpty) {
+      return result.first['balance'] as double?;
+    }
+    return null;
+  }
+
+  // Reload history methods
+  Future<void> insertReloadHistory(int userId, double amount) async {
+    final db = await database;
+    await db.insert('reload_history', {
+      'user_id': userId,
+      'amount': amount,
+      'date': DateTime.now().toIso8601String()
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getReloadHistory(int userId) async {
+    final db = await database;
+    return await db.query('reload_history',
+        where: 'user_id = ?', whereArgs: [userId], orderBy: 'date DESC');
+  }
+
+  Future<void> deleteReloadHistory(int userId) async {
+    final db = await database;
+    await db.delete(
+      'reload_history',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+  }
 }

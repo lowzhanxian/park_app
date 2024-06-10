@@ -3,15 +3,21 @@ import 'dart:typed_data';
 class Violation {
   int? id;
   int userId;
+  String full_name;
   String date;
-  Uint8List? path_image;
+  String car_color;
+  String car_plate;
+  String car_type;
   String details_report;
 
   Violation({
     this.id,
     required this.userId,
+    required this.full_name,
     required this.date,
-    this.path_image,
+    required this.car_color,
+    required this.car_plate,
+    required this.car_type,
     required this.details_report,
   });
 
@@ -19,8 +25,11 @@ class Violation {
     return {
       'id': id,
       'user_id': userId,
+      'full_name':full_name,
       'date': date,
-      'path_image': path_image,
+      'car_color': car_color,
+      'car_plate': car_plate,
+      'car_type': car_type,
       'details_report': details_report,
     };
   }
@@ -29,8 +38,11 @@ class Violation {
     return Violation(
       id: map['id'],
       userId: map['user_id'],
+      full_name: map['full_name'],
       date: map['date'],
-      path_image: map['path_image'],
+      car_color: map['car_color'],
+      car_plate: map['car_plate'],
+      car_type: map['car_type'],
       details_report: map['details_report'],
     );
   }

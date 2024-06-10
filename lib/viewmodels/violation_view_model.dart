@@ -1,14 +1,20 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
-import '../models/violation.dart';
+import 'package:intl/intl.dart';
 import '../helpers/database_help.dart';
+import '../models/violation.dart';
 
 class ViolationViewModel extends ChangeNotifier {
   final date_Controller = TextEditingController();
+  final carColor_Controller = TextEditingController();
+  final carPlate_Controller = TextEditingController();
+  final carType_Controller = TextEditingController();
   final details_Controller = TextEditingController();
-  Uint8List? path_Image;
+
+  String? dateError;
+  String? carColorError;
+  String? carPlateError;
+  String? carTypeError;
+  String? detailsError;
 
   List<Violation> _violations = [];
   List<Violation> get violations => _violations;
@@ -18,18 +24,42 @@ class ViolationViewModel extends ChangeNotifier {
 
   bool _validateInputs() {
     bool isValid = true;
+
     if (date_Controller.text.isEmpty) {
-      _errorMessage = "Date Required";
-      isValid = false;
-    } else if (details_Controller.text.isEmpty) {
-      _errorMessage = "Details Required";
-      isValid = false;
-    } else if (path_Image == null) {
-      _errorMessage = "Image Required";
+      dateError = 'Date is required';
       isValid = false;
     } else {
-      _errorMessage = null;
+      dateError = null;
     }
+
+    if (carColor_Controller.text.isEmpty) {
+      carColorError = 'Car color is required';
+      isValid = false;
+    } else {
+      carColorError = null;
+    }
+
+    if (carPlate_Controller.text.isEmpty) {
+      carPlateError = 'Car plate is required';
+      isValid = false;
+    } else {
+      carPlateError = null;
+    }
+
+    if (carType_Controller.text.isEmpty) {
+      carTypeError = 'Car type is required';
+      isValid = false;
+    } else {
+      carTypeError = null;
+    }
+
+    if (details_Controller.text.isEmpty) {
+      detailsError = 'Details are required';
+      isValid = false;
+    } else {
+      detailsError = null;
+    }
+
     notifyListeners();
     return isValid;
   }
@@ -39,35 +69,47 @@ class ViolationViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addViolation(int userId) async {
+  Future<void> addViolation(int userId, BuildContext context) async {
     if (!_validateInputs()) return;
 
     Violation newViolation = Violation(
       userId: userId,
       date: date_Controller.text,
-      path_image: path_Image,
+      car_color: carColor_Controller.text,
+      car_plate: carPlate_Controller.text,
+      car_type: carType_Controller.text,
       details_report: details_Controller.text,
+      full_name: await _fetchUsername(userId),
     );
 
     await Db_Helper().insertViolationDetails(newViolation);
     date_Controller.clear();
+    carColor_Controller.clear();
+    carPlate_Controller.clear();
+    carType_Controller.clear();
     details_Controller.clear();
-    path_Image = null;
     fetchViolations(userId);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Violation submitted successfully!')),
+    );
   }
 
-  Future<void> updateViolation(Violation violation) async {
+  Future<void> updateViolation(Violation violation, BuildContext context) async {
     if (!_validateInputs()) return;
 
     violation.date = date_Controller.text;
-    violation.path_image = path_Image;
+    violation.car_color = carColor_Controller.text;
+    violation.car_plate = carPlate_Controller.text;
+    violation.car_type = carType_Controller.text;
     violation.details_report = details_Controller.text;
 
     await Db_Helper().updateViolationDetails(violation);
-    date_Controller.clear();
-    details_Controller.clear();
-    path_Image = null;
     fetchViolations(violation.userId);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Violation updated successfully!')),
+    );
   }
 
   Future<void> deleteViolation(int id, int userId) async {
@@ -75,30 +117,30 @@ class ViolationViewModel extends ChangeNotifier {
     fetchViolations(userId);
   }
 
-  Future<void> pickImage() async {
-    // Request storage permission
-    if (await Permission.storage.request().isGranted) {
-      try {
-        FilePickerResult? result = await FilePicker.platform.pickFiles(
-          type: FileType.image,
-        );
-        if (result != null && result.files.single.bytes != null) {
-          path_Image = result.files.single.bytes;
-          notifyListeners();
-        }
-      } catch (e) {
-        _errorMessage = "Failed to pick image: $e";
-        notifyListeners();
-      }
-    } else {
-      _errorMessage = "Storage permission is required to pick an image.";
+  Future<void> pickDate(BuildContext context) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      date_Controller.text = DateFormat('yyyy-MM-dd').format(picked);
       notifyListeners();
     }
+  }
+
+  Future<String> _fetchUsername(int userId) async {
+    final user = await Db_Helper().getUserById(userId);
+    return user?.full_name ?? 'Unknown';
   }
 
   @override
   void dispose() {
     date_Controller.dispose();
+    carColor_Controller.dispose();
+    carPlate_Controller.dispose();
+    carType_Controller.dispose();
     details_Controller.dispose();
     super.dispose();
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'reloadhistory_page.dart'; // Import the reload history page
+import '../helpers/database_help.dart'; // Adjust the import according to your project structure
+import 'reloadhistory_page.dart'; // Adjust the import according to your project structure
 
 class WalletPage extends StatefulWidget {
   final int userId;
@@ -12,9 +12,10 @@ class WalletPage extends StatefulWidget {
 }
 
 class _WalletPageState extends State<WalletPage> {
-  double _balance = 10; // Initial balance
+  double? _balance;
   final TextEditingController _amountController = TextEditingController();
   String? _errorMessage;
+  final Db_Helper _dbHelper = Db_Helper();
 
   @override
   void initState() {
@@ -23,42 +24,42 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   Future<void> _loadBalance() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    double? balance = await _dbHelper.getWalletBalance(widget.userId);
     setState(() {
-      _balance = prefs.getDouble('balance_${widget.userId}') ?? 0.0;
+      _balance = balance ??0.0;
       print("Loaded balance: $_balance"); // Debug print
     });
   }
 
   Future<void> _saveBalance() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble('balance_${widget.userId}', _balance);
-    print("Saved balance: $_balance"); // Debug print
+    if (_balance != null) {
+      await _dbHelper.updateWalletBalance(widget.userId, _balance!);
+      print("Saved balance: $_balance"); // Debug print
+    }
   }
 
   Future<void> _saveReloadHistory(double amount) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> history = prefs.getStringList('history_${widget.userId}') ?? [];
-    history.add('${DateTime.now().toIso8601String()} - RM$amount');
-    await prefs.setStringList('history_${widget.userId}', history);
-    print("Saved history: $history"); // Debug print
+    await _dbHelper.insertReloadHistory(widget.userId, amount);
+    print("Saved history for amount: $amount"); // Debug print
   }
 
   void _reloadBalance() {
-    setState(() {
-      double? amount = double.tryParse(_amountController.text);
-      if (amount == null || amount <= 0) {
+    double? amount = double.tryParse(_amountController.text);
+    if (amount == null || amount <= 0) {
+      setState(() {
         _errorMessage = 'Please enter a valid amount.';
-        _showMessage('No amount is reloaded into the wallet');
-      } else {
-        _balance += amount;
+      });
+      _showMessage('No amount is reloaded into the wallet');
+    } else {
+      setState(() {
+        _balance = (_balance ?? 0) + amount;
         _saveBalance();
         _saveReloadHistory(amount);
         _errorMessage = null;
         _amountController.clear();
         _showMessage('Wallet balance reloaded successfully');
-      }
-    });
+      });
+    }
   }
 
   void _showMessage(String message) {
@@ -86,7 +87,16 @@ class _WalletPageState extends State<WalletPage> {
       MaterialPageRoute(
         builder: (context) => ReloadHistoryPage(userId: widget.userId),
       ),
-    );
+    ).then((_) {
+      // This will be called when ReloadHistoryPage is popped
+      _loadBalance();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadBalance();
   }
 
   @override
@@ -102,8 +112,10 @@ class _WalletPageState extends State<WalletPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              'Available Balance: RM${_balance.toStringAsFixed(2)}',
+            _balance == null
+                ? CircularProgressIndicator()
+                : Text(
+              'Available Balance: RM${_balance!.toStringAsFixed(2)}',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),

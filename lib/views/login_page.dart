@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/login_view_model.dart';
 import 'register.dart';
+import 'forgotpassword_page.dart';  // Import the ForgotPasswordPage
 
 class SignPage extends StatelessWidget {
   @override
@@ -62,6 +63,21 @@ class SignPage extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ForgotPasswordPage()),
+                          );
+                        },
+                        child: Text(
+                          'Forgot Password?',
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                      ),
+                    ),
                     if (viewModel.errorMessage != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),

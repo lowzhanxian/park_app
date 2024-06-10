@@ -24,31 +24,7 @@ class SettingsPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Button for managing vehicles
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => VehiclePage(userId: userId)),
-                  );
-                },
-                icon: Icon(Icons.car_rental, color: Colors.white),
-                label: Text(
-                  'Manage Vehicles',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                ),
-              ),
-            ),
-            SizedBox(height: 25),
+
             // Button for profile management
             SizedBox(
               width: double.infinity,
