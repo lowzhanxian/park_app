@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'views/login_page.dart';
 import 'views/register.dart';
 import 'views/home_page.dart';
 import 'views/vehicle_page.dart';
+import 'viewmodels/parking_duration_view_model.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ParkingDetailsViewModel()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -13,6 +22,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ParkingApp',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
         appBarTheme: AppBarTheme(

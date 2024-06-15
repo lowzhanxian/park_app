@@ -26,35 +26,35 @@ class ViolationViewModel extends ChangeNotifier {
     bool isValid = true;
 
     if (date_Controller.text.isEmpty) {
-      dateError = 'Date is required';
+      dateError = 'Date Required';
       isValid = false;
     } else {
       dateError = null;
     }
 
     if (carColor_Controller.text.isEmpty) {
-      carColorError = 'Car color is required';
+      carColorError = 'Car Details Required';
       isValid = false;
     } else {
       carColorError = null;
     }
 
     if (carPlate_Controller.text.isEmpty) {
-      carPlateError = 'Car plate is required';
+      carPlateError = 'Car Details Required';
       isValid = false;
     } else {
       carPlateError = null;
     }
 
     if (carType_Controller.text.isEmpty) {
-      carTypeError = 'Car type is required';
+      carTypeError = 'Car Details Required';
       isValid = false;
     } else {
       carTypeError = null;
     }
 
     if (details_Controller.text.isEmpty) {
-      detailsError = 'Details are required';
+      detailsError = 'Description Required';
       isValid = false;
     } else {
       detailsError = null;
@@ -118,11 +118,13 @@ class ViolationViewModel extends ChangeNotifier {
   }
 
   Future<void> pickDate(BuildContext context) async {
+    DateTime now = DateTime.now();
+    DateTime threedaysago = now.subtract(Duration(days: 2));
     DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+      initialDate: now,
+      firstDate: threedaysago,
+      lastDate: now,
     );
     if (picked != null) {
       date_Controller.text = DateFormat('yyyy-MM-dd').format(picked);

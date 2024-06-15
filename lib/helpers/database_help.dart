@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:park_app/models/parking_details.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/user.dart';
@@ -81,6 +82,21 @@ class Db_Helper {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS parking_details(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        vehicle_plateNum TEXT NOT NULL,
+        vehicle_type TEXT NOT NULL,
+        parking_location TEXT NOT NULL,
+        road_name TEXT NOT NULL,
+        duration REAL NOT NULL,
+        total_price REAL NOT NULL,
+        date TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -106,7 +122,7 @@ class Db_Helper {
         )
       ''');
     }
-    if (oldVersion < 5) {
+    if (oldVersion < 4) {
       await db.execute('''
         CREATE TABLE IF NOT EXISTS violation_details(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -117,6 +133,22 @@ class Db_Helper {
           car_type TEXT,
           details_report TEXT NOT NULL,
           full_name TEXT,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+      ''');
+    }
+    if (oldVersion < 5) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS parking_details(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          vehicle_plateNum TEXT NOT NULL,
+          vehicle_type TEXT NOT NULL,
+          parking_location TEXT NOT NULL,
+          road_name TEXT NOT NULL,
+          duration REAL NOT NULL,
+          total_price REAL NOT NULL,
+          date TEXT NOT NULL,
           FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
       ''');
@@ -247,6 +279,31 @@ class Db_Helper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  // Parking Details methods
+  Future<int> insertParkingDetails(ParkingDetails parkingDetails) async {
+    Database db = await database;
+    var map = parkingDetails.toMap();
+    map.remove('id'); // Ensure the id is not included in the map
+    return await db.insert('parking_details', map);
+  }
+
+
+  Future<ParkingDetails?> getLatestParkingDetails(int userId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'parking_details',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+      orderBy: 'date DESC',
+      limit: 1,
+    );
+
+    if (results.isNotEmpty) {
+      return ParkingDetails.fromMap(results.first);
+    }
+    return null;
   }
 
   // Wallet balance methods

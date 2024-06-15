@@ -2,25 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/vehicle_view_model.dart';
 import '../models/vehicle.dart';
-import 'parkingduration_page.dart'; // Import the new page
 
-class SelectVehicle extends StatelessWidget {
+class VehicleSelectionDialog extends StatelessWidget {
   final int userId;
-  final String parkingLocation;
 
-  SelectVehicle({required this.userId, required this.parkingLocation});
+  VehicleSelectionDialog({required this.userId});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
+    return ChangeNotifierProvider<VehicleViewModel>(
       create: (_) => VehicleViewModel()..fetchVehicles(userId),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('Select Vehicle'),
-        ),
-        body: Consumer<VehicleViewModel>(
+      child: Dialog(
+        child: Consumer<VehicleViewModel>(
           builder: (context, viewModel, child) {
             return Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 if (viewModel.errorMessage != null)
                   Padding(
@@ -30,37 +26,30 @@ class SelectVehicle extends StatelessWidget {
                       style: TextStyle(color: Colors.red),
                     ),
                   ),
-                Expanded(
-                  child: ListView.builder(
+                if (viewModel.vehicles.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text('No vehicles available.'),
+                  ),
+                if (viewModel.vehicles.isNotEmpty)
+                  ListView.builder(
+                    shrinkWrap: true,
                     itemCount: viewModel.vehicles.length,
                     itemBuilder: (context, index) {
                       Vehicle vehicle = viewModel.vehicles[index];
-                      return Card(
-                        margin: EdgeInsets.all(10),
-                        child: ListTile(
-                          leading: Icon(Icons.directions_car_sharp, size: 50),
-                          title: Text(
-                            vehicle.vehiclePlateNum,
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
-                          ),
-                          subtitle: Text(vehicle.vehicleName),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ParkingDurationPage(
-                                  userId: userId,
-                                  selectedVehicle: vehicle,
-                                  parkingLocation: parkingLocation,
-                                ),
-                              ),
-                            );
-                          },
+                      return ListTile(
+                        leading: Icon(Icons.directions_car_sharp, size: 40),
+                        title: Text(
+                          vehicle.vehiclePlateNum,
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
+                        subtitle: Text(vehicle.vehicleName),
+                        onTap: () {
+                          Navigator.pop(context, vehicle);
+                        },
                       );
                     },
                   ),
-                ),
               ],
             );
           },

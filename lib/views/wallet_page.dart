@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../helpers/database_help.dart'; // Adjust the import according to your project structure
 import 'reloadhistory_page.dart'; // Adjust the import according to your project structure
+import 'home_page.dart'; // Import the homepage
 
 class WalletPage extends StatefulWidget {
   final int userId;
@@ -26,7 +27,7 @@ class _WalletPageState extends State<WalletPage> {
   Future<void> _loadBalance() async {
     double? balance = await _dbHelper.getWalletBalance(widget.userId);
     setState(() {
-      _balance = balance ??0.0;
+      _balance = balance ?? 0.0;
       print("Loaded balance: $_balance"); // Debug print
     });
   }
@@ -93,6 +94,13 @@ class _WalletPageState extends State<WalletPage> {
     });
   }
 
+  void _navigateToHomePage() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => HomePage(userId: widget.userId)),
+    );
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -146,6 +154,17 @@ class _WalletPageState extends State<WalletPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                textStyle: TextStyle(fontSize: 18),
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _navigateToHomePage,
+              child: Text('Back to Home Page'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.red,
                 padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                 textStyle: TextStyle(fontSize: 18),
               ),

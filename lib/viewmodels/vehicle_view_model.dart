@@ -3,64 +3,67 @@ import '../models/vehicle.dart';
 import '../helpers/database_help.dart';
 
 class VehicleViewModel extends ChangeNotifier {
-  List<Vehicle> _vehicles = [];
-  List<Vehicle> get vehicles => _vehicles;
-
-  final vehiclePlateNumController = TextEditingController();
-  final vehicleNameController = TextEditingController();
-
-  String? _errorMessage;
-  String? get errorMessage => _errorMessage;
+  final Db_Helper _dbHelper = Db_Helper();
+  List<Vehicle> vehicles = [];
+  String? errorMessage;
+  final TextEditingController vehiclePlateNumController = TextEditingController();
+  final TextEditingController vehicleNameController = TextEditingController();
 
   Future<void> fetchVehicles(int userId) async {
-    _vehicles = await Db_Helper().getVehicleDetails(userId);
+    try {
+      vehicles = await _dbHelper.getVehicleDetails(userId);
+      errorMessage = null;
+    } catch (e) {
+      errorMessage = 'Error fetching vehicles: $e';
+    }
     notifyListeners();
   }
 
   Future<void> addVehicle(int userId) async {
     if (vehiclePlateNumController.text.isEmpty || vehicleNameController.text.isEmpty) {
-      _errorMessage = "All fields are required";
-      notifyListeners();
-      return;
+      errorMessage = 'Vehicle details cannot be empty';
+    } else {
+      try {
+        Vehicle newVehicle = Vehicle(
+          userId: userId,
+          vehiclePlateNum: vehiclePlateNumController.text,
+          vehicleName: vehicleNameController.text,
+        );
+        await _dbHelper.insertVehicleDetail(newVehicle);
+        await fetchVehicles(userId);
+        errorMessage = null;
+      } catch (e) {
+        errorMessage = 'Error adding vehicle: $e';
+      }
     }
-
-    Vehicle newVehicle = Vehicle(
-      userId: userId,
-      vehiclePlateNum: vehiclePlateNumController.text,
-      vehicleName: vehicleNameController.text,
-    );
-
-    await Db_Helper().insertVehicleDetail(newVehicle);
-    vehiclePlateNumController.clear();
-    vehicleNameController.clear();
-    fetchVehicles(userId);
+    notifyListeners();
   }
 
   Future<void> updateVehicle(Vehicle vehicle) async {
     if (vehiclePlateNumController.text.isEmpty || vehicleNameController.text.isEmpty) {
-      _errorMessage = "All fields are required";
-      notifyListeners();
-      return;
+      errorMessage = 'Vehicle details cannot be empty';
+    } else {
+      try {
+        vehicle.vehiclePlateNum = vehiclePlateNumController.text;
+        vehicle.vehicleName = vehicleNameController.text;
+        await _dbHelper.updateVehicleDetail(vehicle);
+        await fetchVehicles(vehicle.userId);
+        errorMessage = null;
+      } catch (e) {
+        errorMessage = 'Error updating vehicle: $e';
+      }
     }
-
-    vehicle.vehiclePlateNum = vehiclePlateNumController.text;
-    vehicle.vehicleName = vehicleNameController.text;
-
-    await Db_Helper().updateVehicleDetail(vehicle);
-    vehiclePlateNumController.clear();
-    vehicleNameController.clear();
-    fetchVehicles(vehicle.userId);
+    notifyListeners();
   }
 
-  Future<void> deleteVehicle(int id, int userId) async {
-    await Db_Helper().deleteVehicleDetail(id);
-    fetchVehicles(userId);
-  }
-
-  @override
-  void dispose() {
-    vehiclePlateNumController.dispose();
-    vehicleNameController.dispose();
-    super.dispose();
+  Future<void> deleteVehicle(int vehicleId, int userId) async {
+    try {
+      await _dbHelper.deleteVehicleDetail(vehicleId);
+      await fetchVehicles(userId);
+      errorMessage = null;
+    } catch (e) {
+      errorMessage = 'Error deleting vehicle: $e';
+    }
+    notifyListeners();
   }
 }
