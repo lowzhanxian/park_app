@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../helpers/database_help.dart'; // Adjust the import according to your project structure
 import 'reloadhistory_page.dart'; // Adjust the import according to your project structure
 import 'home_page.dart'; // Import the homepage
+import 'payment_method_page.dart';
 
 class WalletPage extends StatefulWidget {
   final int userId;
@@ -44,7 +45,7 @@ class _WalletPageState extends State<WalletPage> {
     print("Saved history for amount: $amount"); // Debug print
   }
 
-  void _reloadBalance() {
+  void _reloadBalance() async {
     double? amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       setState(() {
@@ -52,14 +53,27 @@ class _WalletPageState extends State<WalletPage> {
       });
       _showMessage('No amount is reloaded into the wallet');
     } else {
-      setState(() {
-        _balance = (_balance ?? 0) + amount;
-        _saveBalance();
-        _saveReloadHistory(amount);
-        _errorMessage = null;
-        _amountController.clear();
-        _showMessage('Wallet balance reloaded successfully');
-      });
+      // Redirect to PaymentMethodPage
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaymentMethodPage(userId: widget.userId),
+        ),
+      );
+
+      // Check if the payment method was successfully entered
+      if (result == true) {
+        setState(() {
+          _balance = (_balance ?? 0) + amount;
+          _saveBalance();
+          _saveReloadHistory(amount);
+          _errorMessage = null;
+          _amountController.clear();
+          _showMessage('Wallet balance reloaded successfully');
+        });
+      } else {
+        _showMessage('Payment method not entered. Reload cancelled.');
+      }
     }
   }
 

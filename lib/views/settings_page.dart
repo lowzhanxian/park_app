@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'vehicle_page.dart';
+// import 'vehicle_page.dart';
 import 'profile_management_page.dart';
-import 'history_page.dart';
 import 'wallet_page.dart';
 
 
@@ -49,31 +48,7 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 25),
-            // Button for history
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => HistoryPage(userId: userId)),
-                  );
-                },
-                icon: Icon(Icons.history, color: Colors.white),
-                label: Text(
-                  'History',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                ),
-              ),
-            ),
+
             SizedBox(height: 25),
             // Button for wallet
             SizedBox(

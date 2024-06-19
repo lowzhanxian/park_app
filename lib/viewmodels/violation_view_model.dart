@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../helpers/database_help.dart';
-import '../models/violation.dart';
+import '../models/violation.dart'; // Make sure to import the correct model
 
-class ViolationViewModel extends ChangeNotifier {
-  final date_Controller = TextEditingController();
-  final carColor_Controller = TextEditingController();
-  final carPlate_Controller = TextEditingController();
-  final carType_Controller = TextEditingController();
-  final details_Controller = TextEditingController();
+class FeedbackViewModel extends ChangeNotifier {
+  final dateController = TextEditingController();
+  final locationController = TextEditingController();
+  final contactInfoController = TextEditingController();
+  final feedbackTypeController = TextEditingController();
+  final feedbackDetailsController = TextEditingController();
 
   String? dateError;
-  String? carColorError;
-  String? carPlateError;
-  String? carTypeError;
-  String? detailsError;
+  String? locationError;
+  String? contactInfoError;
+  String? feedbackTypeError;
+  String? feedbackDetailsError;
 
-  List<Violation> _violations = [];
-  List<Violation> get violations => _violations;
+  List<UserFeedback> _feedbacks = [];
+  List<UserFeedback> get feedbacks => _feedbacks;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
@@ -25,109 +25,109 @@ class ViolationViewModel extends ChangeNotifier {
   bool _validateInputs() {
     bool isValid = true;
 
-    if (date_Controller.text.isEmpty) {
+    if (dateController.text.isEmpty) {
       dateError = 'Date Required';
       isValid = false;
     } else {
       dateError = null;
     }
 
-    if (carColor_Controller.text.isEmpty) {
-      carColorError = 'Car Details Required';
+    if (locationController.text.isEmpty) {
+      locationError = 'Location Required';
       isValid = false;
     } else {
-      carColorError = null;
+      locationError = null;
     }
 
-    if (carPlate_Controller.text.isEmpty) {
-      carPlateError = 'Car Details Required';
+    if (contactInfoController.text.isEmpty) {
+      contactInfoError = 'Contact Info Required';
       isValid = false;
     } else {
-      carPlateError = null;
+      contactInfoError = null;
     }
 
-    if (carType_Controller.text.isEmpty) {
-      carTypeError = 'Car Details Required';
+    if (feedbackTypeController.text.isEmpty) {
+      feedbackTypeError = 'Feedback Type Required';
       isValid = false;
     } else {
-      carTypeError = null;
+      feedbackTypeError = null;
     }
 
-    if (details_Controller.text.isEmpty) {
-      detailsError = 'Description Required';
+    if (feedbackDetailsController.text.isEmpty) {
+      feedbackDetailsError = 'Details Required';
       isValid = false;
     } else {
-      detailsError = null;
+      feedbackDetailsError = null;
     }
 
     notifyListeners();
     return isValid;
   }
 
-  Future<void> fetchViolations(int userId) async {
-    _violations = await Db_Helper().getViolationDetails(userId);
+  Future<void> fetchFeedbacks(int userId) async {
+    _feedbacks = await Db_Helper().getFeedbackDetails(userId);
     notifyListeners();
   }
 
-  Future<void> addViolation(int userId, BuildContext context) async {
+  Future<void> addFeedback(int userId, BuildContext context) async {
     if (!_validateInputs()) return;
 
-    Violation newViolation = Violation(
+    UserFeedback newFeedback = UserFeedback(
       userId: userId,
-      date: date_Controller.text,
-      car_color: carColor_Controller.text,
-      car_plate: carPlate_Controller.text,
-      car_type: carType_Controller.text,
-      details_report: details_Controller.text,
-      full_name: await _fetchUsername(userId),
+      date: dateController.text,
+      location: locationController.text,
+      contactInfo: contactInfoController.text,
+      feedbackType: feedbackTypeController.text,
+      feedbackDetails: feedbackDetailsController.text,
+      fullName: await _fetchUsername(userId),
     );
 
-    await Db_Helper().insertViolationDetails(newViolation);
-    date_Controller.clear();
-    carColor_Controller.clear();
-    carPlate_Controller.clear();
-    carType_Controller.clear();
-    details_Controller.clear();
-    fetchViolations(userId);
+    await Db_Helper().insertFeedbackDetails(newFeedback);
+    dateController.clear();
+    locationController.clear();
+    contactInfoController.clear();
+    feedbackTypeController.clear();
+    feedbackDetailsController.clear();
+    fetchFeedbacks(userId);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Violation submitted successfully!')),
+      SnackBar(content: Text('Feedback submitted successfully!')),
     );
   }
 
-  Future<void> updateViolation(Violation violation, BuildContext context) async {
+  Future<void> updateFeedback(UserFeedback feedback, BuildContext context) async {
     if (!_validateInputs()) return;
 
-    violation.date = date_Controller.text;
-    violation.car_color = carColor_Controller.text;
-    violation.car_plate = carPlate_Controller.text;
-    violation.car_type = carType_Controller.text;
-    violation.details_report = details_Controller.text;
+    feedback.date = dateController.text;
+    feedback.location = locationController.text;
+    feedback.contactInfo = contactInfoController.text;
+    feedback.feedbackType = feedbackTypeController.text;
+    feedback.feedbackDetails = feedbackDetailsController.text;
 
-    await Db_Helper().updateViolationDetails(violation);
-    fetchViolations(violation.userId);
+    await Db_Helper().updateFeedbackDetails(feedback);
+    fetchFeedbacks(feedback.userId);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Violation updated successfully!')),
+      SnackBar(content: Text('Feedback updated successfully!')),
     );
   }
 
-  Future<void> deleteViolation(int id, int userId) async {
-    await Db_Helper().deleteViolationDetails(id);
-    fetchViolations(userId);
+  Future<void> deleteFeedback(int id, int userId) async {
+    await Db_Helper().deleteFeedbackDetails(id);
+    fetchFeedbacks(userId);
   }
 
   Future<void> pickDate(BuildContext context) async {
     DateTime now = DateTime.now();
-    DateTime threedaysago = now.subtract(Duration(days: 2));
+    DateTime threeDaysAgo = now.subtract(Duration(days: 2));
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: now,
-      firstDate: threedaysago,
+      firstDate: threeDaysAgo,
       lastDate: now,
     );
     if (picked != null) {
-      date_Controller.text = DateFormat('yyyy-MM-dd').format(picked);
+      dateController.text = DateFormat('yyyy-MM-dd').format(picked);
       notifyListeners();
     }
   }
@@ -139,11 +139,11 @@ class ViolationViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    date_Controller.dispose();
-    carColor_Controller.dispose();
-    carPlate_Controller.dispose();
-    carType_Controller.dispose();
-    details_Controller.dispose();
+    dateController.dispose();
+    locationController.dispose();
+    contactInfoController.dispose();
+    feedbackTypeController.dispose();
+    feedbackDetailsController.dispose();
     super.dispose();
   }
 }

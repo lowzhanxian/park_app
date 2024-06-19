@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import '../models/user.dart';
 import '../models/vehicle.dart';
 import '../models/violation.dart';
+import '../models/compound.dart';
 
 class Db_Helper {
   static final Db_Helper _instance = Db_Helper._internal();
@@ -23,7 +24,7 @@ class Db_Helper {
     String path = join(await getDatabasesPath(), 'app_database.db');
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -52,16 +53,37 @@ class Db_Helper {
     ''');
 
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS violation_details(
+      CREATE TABLE IF NOT EXISTS feedback_details(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         date TEXT NOT NULL,
-        car_color TEXT,
-        car_plate TEXT,
-        car_type TEXT,
-        details_report TEXT NOT NULL,
+        location TEXT,
+        contact_info TEXT,
+        feedback_type TEXT,
+        feedback_details TEXT NOT NULL,
         full_name TEXT,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    ''');
+
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS compounds(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        description TEXT NOT NULL,
+        amount REAL NOT NULL,
+        date TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS paid_compounds(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        description TEXT NOT NULL,
+        amount REAL NOT NULL,
+        date TEXT
       )
     ''');
 
@@ -124,14 +146,14 @@ class Db_Helper {
     }
     if (oldVersion < 4) {
       await db.execute('''
-        CREATE TABLE IF NOT EXISTS violation_details(
+        CREATE TABLE IF NOT EXISTS feedback_details(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id INTEGER NOT NULL,
           date TEXT NOT NULL,
-          car_color TEXT,
-          car_plate TEXT,
-          car_type TEXT,
-          details_report TEXT NOT NULL,
+          location TEXT,
+          contact_info TEXT,
+          feedback_type TEXT,
+          feedback_details TEXT NOT NULL,
           full_name TEXT,
           FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
@@ -153,6 +175,26 @@ class Db_Helper {
         )
       ''');
     }
+    if (oldVersion < 6) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS compounds(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          description TEXT NOT NULL,
+          amount REAL NOT NULL,
+          date TEXT
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS paid_compounds(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          description TEXT NOT NULL,
+          amount REAL NOT NULL,
+          date TEXT
+        )
+      ''');
+    }
   }
 
   Future<void> deleteDatabase() async {
@@ -164,6 +206,7 @@ class Db_Helper {
     Database db = await database;
     return await db.insert('users', user.toMap());
   }
+
 
   Future<User?> getUser(String username) async {
     Database db = await database;
@@ -206,6 +249,16 @@ class Db_Helper {
       whereArgs: [userId],
     );
   }
+  Future<void> updateUser(User user) async {
+    Database db = await database;
+    await db.update(
+      'users',
+      user.toMap(),
+      where: 'id = ?',
+      whereArgs: [user.id],
+    );
+  }
+
 
   // Vehicle methods
   Future<int> insertVehicleDetail(Vehicle vehicle) async {
@@ -244,42 +297,44 @@ class Db_Helper {
     );
   }
 
-  // Violation methods
-  Future<int> insertViolationDetails(Violation violation) async {
-    Database db = await database;
-    return await db.insert('violation_details', violation.toMap());
+  // Feedback methods
+  Future<int> insertFeedbackDetails(UserFeedback feedback) async {
+    final db = await database;
+    return await db.insert('feedback_details', feedback.toMap());
   }
 
-  Future<List<Violation>> getViolationDetails(int userId) async {
-    Database db = await database;
+  Future<List<UserFeedback>> getFeedbackDetails(int userId) async {
+    final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'violation_details',
+      'feedback_details',
       where: 'user_id = ?',
       whereArgs: [userId],
     );
     return List.generate(maps.length, (i) {
-      return Violation.fromMap(maps[i]);
+      return UserFeedback.fromMap(maps[i]);
     });
   }
 
-  Future<int> updateViolationDetails(Violation violation) async {
-    Database db = await database;
+  Future<int> updateFeedbackDetails(UserFeedback feedback) async {
+    final db = await database;
     return await db.update(
-      'violation_details',
-      violation.toMap(),
+      'feedback_details',
+      feedback.toMap(),
       where: 'id = ?',
-      whereArgs: [violation.id],
+      whereArgs: [feedback.id],
     );
   }
 
-  Future<int> deleteViolationDetails(int id) async {
-    Database db = await database;
+  Future<int> deleteFeedbackDetails(int id) async {
+    final db = await database;
     return await db.delete(
-      'violation_details',
+      'feedback_details',
       where: 'id = ?',
       whereArgs: [id],
     );
   }
+
+
 
   // Parking Details methods
   Future<int> insertParkingDetails(ParkingDetails parkingDetails) async {
@@ -288,7 +343,6 @@ class Db_Helper {
     map.remove('id'); // Ensure the id is not included in the map
     return await db.insert('parking_details', map);
   }
-
 
   Future<ParkingDetails?> getLatestParkingDetails(int userId) async {
     Database db = await database;
@@ -305,6 +359,30 @@ class Db_Helper {
     }
     return null;
   }
+
+  Future<List<ParkingDetails>> getParkingHistory(int userId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'parking_details',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+      orderBy: 'date DESC',
+    );
+    return List.generate(maps.length, (i) {
+      return ParkingDetails.fromMap(maps[i]);
+    });
+  }
+
+  Future<int> deleteParkingDetail(int id) async {
+    final db = await database;
+    return await db.delete(
+      'parking_details',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+
 
   // Wallet balance methods
   Future<void> updateWalletBalance(int userId, double balance) async {
@@ -352,6 +430,46 @@ class Db_Helper {
       'reload_history',
       where: 'user_id = ?',
       whereArgs: [userId],
+    );
+  }
+
+  // Compound methods
+  Future<void> insertCompound(Compound compound) async {
+    final db = await database;
+    await db.insert('compounds', compound.toMap());
+  }
+
+  Future<void> insertPaidCompound(Compound compound) async {
+    final db = await database;
+    await db.insert('paid_compounds', compound.toMap());
+  }
+
+  Future<List<Compound>> getCompounds() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('compounds');
+    return List.generate(maps.length, (i) {
+      return Compound.fromMap(maps[i]);
+    });
+  }
+
+  Future<List<Compound>> getPaidCompounds(int userId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'paid_compounds',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+    return List.generate(maps.length, (i) {
+      return Compound.fromMap(maps[i]);
+    });
+  }
+
+  Future<void> deletePaidCompound(int id) async {
+    final db = await database;
+    await db.delete(
+      'paid_compounds',
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 }

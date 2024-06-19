@@ -4,18 +4,18 @@ import '../viewmodels/violation_view_model.dart';
 import '../helpers/database_help.dart';
 import '../models/violation.dart';
 
-class ViolationPage extends StatelessWidget {
+class FeedbackPage extends StatelessWidget {
   final int userId;
 
-  ViolationPage({required this.userId});
+  FeedbackPage({required this.userId});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ViolationViewModel()..fetchViolations(userId),
+      create: (_) => FeedbackViewModel()..fetchFeedbacks(userId),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Submit Violation Feedback'),
+          title: Text('Submit Your Feedback'),
           actions: [
             IconButton(
               icon: Icon(Icons.delete),
@@ -28,7 +28,7 @@ class ViolationPage extends StatelessWidget {
             ),
           ],
         ),
-        body: Consumer<ViolationViewModel>(
+        body: Consumer<FeedbackViewModel>(
           builder: (context, viewModel, child) {
             return SingleChildScrollView(
               child: Padding(
@@ -38,9 +38,9 @@ class ViolationPage extends StatelessWidget {
                   children: [
                     SizedBox(height: 16),
                     TextField(
-                      controller: viewModel.date_Controller,
+                      controller: viewModel.dateController,
                       decoration: InputDecoration(
-                        labelText: 'Date',
+                        labelText: 'Incident Date',
                         errorText: viewModel.dateError,
                       ),
                       onTap: () async {
@@ -50,41 +50,41 @@ class ViolationPage extends StatelessWidget {
                     ),
                     SizedBox(height: 8),
                     TextField(
-                      controller: viewModel.carColor_Controller,
+                      controller: viewModel.locationController,
                       decoration: InputDecoration(
-                        labelText: 'Car Color',
-                        errorText: viewModel.carColorError,
+                        labelText: 'Location',
+                        errorText: viewModel.locationError,
                       ),
                     ),
                     SizedBox(height: 8),
                     TextField(
-                      controller: viewModel.carPlate_Controller,
+                      controller: viewModel.contactInfoController,
                       decoration: InputDecoration(
-                        labelText: 'Car Plate',
-                        errorText: viewModel.carPlateError,
+                        labelText: 'Contact Information',
+                        errorText: viewModel.contactInfoError,
                       ),
                     ),
                     SizedBox(height: 8),
                     TextField(
-                      controller: viewModel.carType_Controller,
+                      controller: viewModel.feedbackTypeController,
                       decoration: InputDecoration(
-                        labelText: 'Car Type',
-                        errorText: viewModel.carTypeError,
+                        labelText: 'Feedback Type',
+                        errorText: viewModel.feedbackTypeError,
                       ),
                     ),
                     SizedBox(height: 8),
                     TextField(
-                      controller: viewModel.details_Controller,
+                      controller: viewModel.feedbackDetailsController,
                       decoration: InputDecoration(
-                        labelText: 'Details',
-                        errorText: viewModel.detailsError,
+                        labelText: 'Feedback Details',
+                        errorText: viewModel.feedbackDetailsError,
                       ),
                       maxLines: 3,
                     ),
                     SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
-                        viewModel.addViolation(userId, context);
+                        viewModel.addFeedback(userId, context);
                       },
                       child: Text('Submit'),
                       style: ElevatedButton.styleFrom(
@@ -109,21 +109,21 @@ class ViolationPage extends StatelessWidget {
                     ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
-                      itemCount: viewModel.violations.length,
+                      itemCount: viewModel.feedbacks.length,
                       itemBuilder: (context, index) {
-                        Violation violation = viewModel.violations[index];
+                        UserFeedback feedback = viewModel.feedbacks[index];
                         return Card(
                           margin: EdgeInsets.symmetric(vertical: 8),
                           child: ListTile(
-                            title: Text(violation.date),
+                            title: Text(feedback.date),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('User: ${violation.full_name}'),
-                                Text('Car Color: ${violation.car_color}'),
-                                Text('Car Plate: ${violation.car_plate}'),
-                                Text('Car Type: ${violation.car_type}'),
-                                Text('Details: ${violation.details_report}'),
+                                Text('User: ${feedback.fullName}'),
+                                Text('Location: ${feedback.location}'),
+                                Text('Contact: ${feedback.contactInfo}'),
+                                Text('Feedback Type: ${feedback.feedbackType}'),
+                                Text('Details: ${feedback.feedbackDetails}'),
                               ],
                             ),
                             trailing: Row(
@@ -132,23 +132,23 @@ class ViolationPage extends StatelessWidget {
                                 IconButton(
                                   icon: Icon(Icons.edit),
                                   onPressed: () {
-                                    viewModel.date_Controller.text = violation.date;
-                                    viewModel.carColor_Controller.text = violation.car_color;
-                                    viewModel.carPlate_Controller.text = violation.car_plate;
-                                    viewModel.carType_Controller.text = violation.car_type;
-                                    viewModel.details_Controller.text = violation.details_report;
+                                    viewModel.dateController.text = feedback.date;
+                                    viewModel.locationController.text = feedback.location;
+                                    viewModel.contactInfoController.text = feedback.contactInfo;
+                                    viewModel.feedbackTypeController.text = feedback.feedbackType;
+                                    viewModel.feedbackDetailsController.text = feedback.feedbackDetails;
                                     showDialog(
                                       context: context,
                                       builder: (context) => AlertDialog(
-                                        title: Text('Edit Violation'),
+                                        title: Text('Edit Feedback'),
                                         content: SingleChildScrollView(
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               TextField(
-                                                controller: viewModel.date_Controller,
+                                                controller: viewModel.dateController,
                                                 decoration: InputDecoration(
-                                                  labelText: 'Date',
+                                                  labelText: 'Incident Date',
                                                   errorText: viewModel.dateError,
                                                 ),
                                                 onTap: () async {
@@ -157,31 +157,31 @@ class ViolationPage extends StatelessWidget {
                                                 },
                                               ),
                                               TextField(
-                                                controller: viewModel.carColor_Controller,
+                                                controller: viewModel.locationController,
                                                 decoration: InputDecoration(
-                                                  labelText: 'Car Color',
-                                                  errorText: viewModel.carColorError,
+                                                  labelText: 'Location',
+                                                  errorText: viewModel.locationError,
                                                 ),
                                               ),
                                               TextField(
-                                                controller: viewModel.carPlate_Controller,
+                                                controller: viewModel.contactInfoController,
                                                 decoration: InputDecoration(
-                                                  labelText: 'Car Plate',
-                                                  errorText: viewModel.carPlateError,
+                                                  labelText: 'Contact Information',
+                                                  errorText: viewModel.contactInfoError,
                                                 ),
                                               ),
                                               TextField(
-                                                controller: viewModel.carType_Controller,
+                                                controller: viewModel.feedbackTypeController,
                                                 decoration: InputDecoration(
-                                                  labelText: 'Car Type',
-                                                  errorText: viewModel.carTypeError,
+                                                  labelText: 'Feedback Type',
+                                                  errorText: viewModel.feedbackTypeError,
                                                 ),
                                               ),
                                               TextField(
-                                                controller: viewModel.details_Controller,
+                                                controller: viewModel.feedbackDetailsController,
                                                 decoration: InputDecoration(
-                                                  labelText: 'Details',
-                                                  errorText: viewModel.detailsError,
+                                                  labelText: 'Feedback Details',
+                                                  errorText: viewModel.feedbackDetailsError,
                                                 ),
                                               ),
                                             ],
@@ -196,7 +196,7 @@ class ViolationPage extends StatelessWidget {
                                           ),
                                           TextButton(
                                             onPressed: () {
-                                              viewModel.updateViolation(violation, context);
+                                              viewModel.updateFeedback(feedback, context);
                                               Navigator.of(context).pop();
                                             },
                                             child: Text('Save'),
@@ -209,7 +209,7 @@ class ViolationPage extends StatelessWidget {
                                 IconButton(
                                   icon: Icon(Icons.delete),
                                   onPressed: () {
-                                    viewModel.deleteViolation(violation.id!, userId);
+                                    viewModel.deleteFeedback(feedback.id!, userId);
                                   },
                                 ),
                               ],

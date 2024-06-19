@@ -5,6 +5,9 @@ import '../models/parking_details.dart';
 import '../viewmodels/parking_duration_view_model.dart';
 import 'package:provider/provider.dart';
 import 'wallet_page.dart';
+import 'package:intl/intl.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class ParkingDurationPage extends StatefulWidget {
   final int userId;
@@ -29,7 +32,28 @@ class _ParkingDurationPageState extends State<ParkingDurationPage> {
   static const double pricePerHour = 0.50;
   static const double wholeDayPrice = 4.00;
 
-  double get _totalPrice => _isWholeDay ? wholeDayPrice : _duration * pricePerHour;
+  double get _totalPrice => _isFreeParking() ? 0.0 : (_isWholeDay ? wholeDayPrice : _duration * pricePerHour);
+
+  @override
+  void initState() {
+    super.initState();
+    tz.initializeTimeZones();
+    if (_isFreeParking()) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showFreeParkingAlert();
+      });
+    }
+  }
+
+  bool _isFreeParking() {
+    final now = tz.TZDateTime.now(tz.getLocation('Asia/Kuala_Lumpur'));
+    final hour = now.hour;
+    final minute = now.minute;
+    if (hour > 18 || (hour == 18 && minute > 0) || hour < 9 || (hour == 9 && minute == 0)) {
+      return true;
+    }
+    return false;
+  }
 
   void _updateDuration(double value) {
     setState(() {
@@ -44,15 +68,16 @@ class _ParkingDurationPageState extends State<ParkingDurationPage> {
   }
 
   void _showBookingConfirmation(BuildContext context) async {
+    final now = DateTime.now().toLocal();
     final parkingDetails = ParkingDetails(
       userId: widget.userId,
       vehiclePlateNum: widget.selectedVehicle.vehiclePlateNum,
       vehicleType: widget.selectedVehicle.vehicleName,
       parkingLocation: widget.parkingLocation,
       roadName: widget.roadName,
-      duration: _isWholeDay ? 9 : _duration,
+      duration: _isWholeDay ? 24 : _duration,
       totalPrice: _totalPrice,
-      date: DateTime.now().toIso8601String(),
+      date: now.toIso8601String(), // Save the local time in ISO format
     );
 
     final viewModel = Provider.of<ParkingDetailsViewModel>(context, listen: false);
@@ -60,7 +85,9 @@ class _ParkingDurationPageState extends State<ParkingDurationPage> {
 
     if (balance != null && balance >= _totalPrice) {
       await viewModel.insertParkingDetails(parkingDetails);
-      await viewModel.updateWalletBalance(widget.userId, balance - _totalPrice);
+      if (!_isFreeParking()) {
+        await viewModel.updateWalletBalance(widget.userId, balance - _totalPrice);
+      }
 
       showDialog(
         context: context,
@@ -121,6 +148,33 @@ class _ParkingDurationPageState extends State<ParkingDurationPage> {
     }
   }
 
+  void _showFreeParkingAlert() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Free Parking Time'),
+          content: Text('Parking is free between 6:01 PM and 8:59 AM. You do not need to pay for parking during this time.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).popUntil((route) => route.isFirst); // Pop all intermediate pages
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HomePage(userId: widget.userId),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,36 +210,38 @@ class _ParkingDurationPageState extends State<ParkingDurationPage> {
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+            if (!_isFreeParking()) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Whole Day (RM4.00): ',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  Switch(
+                    value: _isWholeDay,
+                    onChanged: _toggleWholeDay,
+                  ),
+                ],
+              ),
+              if (!_isWholeDay) ...[
                 Text(
-                  'Full Day (RM4.00): ',
+                  'Duration (hours): ${_duration.toStringAsFixed(1)}',
                   style: TextStyle(fontSize: 18),
                 ),
-                Switch(
-                  value: _isWholeDay,
-                  onChanged: _toggleWholeDay,
+                Slider(
+                  min: 1,
+                  max: 9,
+                  divisions: 8,
+                  value: _duration,
+                  onChanged: _updateDuration,
+                  label: '${_duration.toStringAsFixed(1)} hours',
+                  activeColor: Colors.blue,
+                  inactiveColor: Colors.blue.withOpacity(0.3),
                 ),
               ],
-            ),
-            if (!_isWholeDay) ...[
-              Text(
-                'Duration (hours): ${_duration.toStringAsFixed(1)}',
-                style: TextStyle(fontSize: 18),
-              ),
-              Slider(
-                min: 1,
-                max: 9,
-                divisions: 8,
-                value: _duration,
-                onChanged: _updateDuration,
-                label: '${_duration.toStringAsFixed(1)} hours',
-                activeColor: Colors.blue,
-                inactiveColor: Colors.blue.withOpacity(0.3),
-              ),
+              SizedBox(height: 20),
             ],
-            SizedBox(height: 20),
             Text(
               'Total Price: RM${_totalPrice.toStringAsFixed(2)}',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),

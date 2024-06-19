@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'vehicle_page.dart';
 import 'settings_page.dart';
-import 'selectparking_page.dart'; // Import the new page
-import 'violation_page.dart'; // Import the violation page
-import 'wallet_page.dart'; // Import the wallet page
+import 'selectparking_page.dart';
+import 'violation_page.dart';
+import 'wallet_page.dart';
+import 'compound_payment_page.dart';
 import '../helpers/database_help.dart';
 import '../models/user.dart';
 import '../models/parking_details.dart';
+import 'parking_history_page.dart';
+
 import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
@@ -20,31 +23,37 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final Db_Helper _dbHelper = Db_Helper();
-  String? _username;
-  double? _walletBalance;
+  final Db_Helper database_helper = Db_Helper();
+  String? username;
+  double? wallet_balance;
   ParkingDetails? _latestParkingDetails;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    display_userData();
   }
 
-  Future<void> _loadUserData() async {
-    User? user = await _dbHelper.getUserById(widget.userId);
-    double? balance = await _dbHelper.getWalletBalance(widget.userId);
-    ParkingDetails? parkingDetails = await _dbHelper.getLatestParkingDetails(widget.userId);
+  Future<void> display_userData() async {
+    User? user = await database_helper.getUserById(widget.userId);
+    double? balance = await database_helper.getWalletBalance(widget.userId);
+    ParkingDetails? parkingDetails = await database_helper.getLatestParkingDetails(widget.userId);
     setState(() {
-      _username = user?.username;
-      _walletBalance = balance ?? 0.0;
+      username = user?.username;
+      wallet_balance = balance ?? 0.0;
       _latestParkingDetails = parkingDetails;
+    });
+  }
+
+  void updateBalance() async {
+    double? balance = await database_helper.getWalletBalance(widget.userId);
+    setState(() {
+      wallet_balance = balance ?? 0.0;
     });
   }
 
   bool _isParkingExpired() {
     if (_latestParkingDetails == null) return false;
-
     DateTime parkingEndTime = DateTime.parse(_latestParkingDetails!.date).add(Duration(hours: _latestParkingDetails!.duration.toInt()));
     return DateTime.now().isAfter(parkingEndTime);
   }
@@ -63,7 +72,7 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
         title: Column(
           children: [
-            Text('Welcome ${_username ?? ''}'),
+            Text('Welcome ${username ?? ''}'),
           ],
         ),
         actions: [
@@ -83,14 +92,14 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_walletBalance != null)
+            if (wallet_balance != null)
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
                     Expanded(
                       child: Text(
-                        'Available Balance: RM${_walletBalance!.toStringAsFixed(2)}',
+                        'Wallet: RM${wallet_balance!.toStringAsFixed(2)}',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
@@ -151,7 +160,7 @@ class _HomePageState extends State<HomePage> {
                         style: TextStyle(color: Colors.white),
                       ),
                       Text(
-                        'Date: ${_latestParkingDetails!.date}',
+                        'Date: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(_latestParkingDetails!.date).toLocal())}', // Convert the date to local time and format it
                         style: TextStyle(color: Colors.white),
                       ),
                     ],
@@ -193,16 +202,30 @@ class _HomePageState extends State<HomePage> {
                     icon: Icons.info,
                     label: 'View Parking Details',
                     onPressed: () {
-                      // TODO: Navigate to parking details page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ParkingHistoryPage(userId: widget.userId)),
+                      );
+                    },
+                  ),
+
+                  _buildGridButton(
+                    icon: Icons.report,
+                    label: 'Feedback',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => FeedbackPage(userId: widget.userId)),
+                      );
                     },
                   ),
                   _buildGridButton(
                     icon: Icons.report,
-                    label: 'Violations',
+                    label: 'Compound',
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => ViolationPage(userId: widget.userId)),
+                        MaterialPageRoute(builder: (context) => CompoundPaymentPage(userId: widget.userId, onBalanceUpdated: updateBalance)),
                       );
                     },
                   ),
@@ -219,7 +242,7 @@ class _HomePageState extends State<HomePage> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8), // Adjust the border radius as needed
+        borderRadius: BorderRadius.circular(8),
       ),
       child: InkWell(
         onTap: onPressed,
@@ -227,7 +250,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: Colors.black, size: 30), // Adjust the icon size as needed
+              Icon(icon, color: Colors.black, size: 30),
               SizedBox(height: 10),
               Text(
                 label,

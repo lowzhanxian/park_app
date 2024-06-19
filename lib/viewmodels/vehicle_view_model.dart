@@ -19,9 +19,16 @@ class VehicleViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _isValidPlateNumber(String plateNum) {
+    final validCharacters = RegExp(r'^[a-zA-Z0-9]+$');
+    return validCharacters.hasMatch(plateNum);
+  }
+
   Future<void> addVehicle(int userId) async {
     if (vehiclePlateNumController.text.isEmpty || vehicleNameController.text.isEmpty) {
       errorMessage = 'Vehicle details cannot be empty';
+    } else if (!_isValidPlateNumber(vehiclePlateNumController.text)) {
+      errorMessage = 'Vehicle plate number can only contain alphabets and numbers';
     } else {
       try {
         Vehicle newVehicle = Vehicle(
@@ -42,6 +49,8 @@ class VehicleViewModel extends ChangeNotifier {
   Future<void> updateVehicle(Vehicle vehicle) async {
     if (vehiclePlateNumController.text.isEmpty || vehicleNameController.text.isEmpty) {
       errorMessage = 'Vehicle details cannot be empty';
+    } else if (!_isValidPlateNumber(vehiclePlateNumController.text)) {
+      errorMessage = 'Vehicle plate number can only contain alphabets and numbers';
     } else {
       try {
         vehicle.vehiclePlateNum = vehiclePlateNumController.text;
