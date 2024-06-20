@@ -29,20 +29,17 @@ class _WalletPageState extends State<WalletPage> {
     double? balance = await _dbHelper.getWalletBalance(widget.userId);
     setState(() {
       _balance = balance ?? 0.0;
-      print("Loaded balance: $_balance"); // Debug print
     });
   }
 
   Future<void> _saveBalance() async {
     if (_balance != null) {
       await _dbHelper.updateWalletBalance(widget.userId, _balance!);
-      print("Saved balance: $_balance"); // Debug print
     }
   }
 
   Future<void> _saveReloadHistory(double amount) async {
     await _dbHelper.insertReloadHistory(widget.userId, amount);
-    print("Saved history for amount: $amount"); // Debug print
   }
 
   void _reloadBalance() async {
@@ -128,28 +125,54 @@ class _WalletPageState extends State<WalletPage> {
         centerTitle: true,
         title: Text('Wallet'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
+      body: Container(
+        padding: const EdgeInsets.all(15),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             _balance == null
                 ? CircularProgressIndicator()
-                : Text(
-              'Available Balance: RM${_balance!.toStringAsFixed(2)}',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                : Container(
+              padding: EdgeInsets.all(10),
+
+              child: Column(
+                children: [
+                  Text(
+                    'Available Balance',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'RM${_balance!.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.lightGreen,
+                    ),
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: 20),
             TextField(
               controller: _amountController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                labelText: 'Enter amount to add',
+                labelText: 'Amount',
                 errorText: _errorMessage,
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                filled: true,
+
               ),
             ),
+
+
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _reloadBalance,
@@ -159,6 +182,9 @@ class _WalletPageState extends State<WalletPage> {
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                 textStyle: TextStyle(fontSize: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
             SizedBox(height: 20),
@@ -170,6 +196,9 @@ class _WalletPageState extends State<WalletPage> {
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                 textStyle: TextStyle(fontSize: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
             SizedBox(height: 20),
@@ -177,10 +206,13 @@ class _WalletPageState extends State<WalletPage> {
               onPressed: _navigateToHomePage,
               child: Text('Back to Home Page'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: Colors.red,
-                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
                 textStyle: TextStyle(fontSize: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ],

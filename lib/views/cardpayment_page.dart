@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../helpers/database_help.dart';
 
 class CardPaymentPage extends StatefulWidget {
   final int userId;
@@ -20,21 +19,18 @@ class _CardPaymentPageState extends State<CardPaymentPage> {
   String? _expiryErrorMessage;
   String? _cvvErrorMessage;
   String? _tacErrorMessage;
-  bool _isTacSent = false;
   bool _isTacFieldVisible = false;
-  final Db_Helper _dbHelper = Db_Helper();
 
   void _savePaymentMethod() {
     if (_validateCardNumber() && _validateExpiryDate() && _validateCVV()) {
-      // Show fake TAC sent message
-      _showTacMessage('A fake TAC has been sent to your phone');
+      _showTacMessage('Sms Tac');
     }
   }
 
   bool _validateCardNumber() {
     if (_cardNumberController.text.length != 16) {
       setState(() {
-        _cardErrorMessage = 'Please enter a valid 16-digit card number.';
+        _cardErrorMessage = 'Enter 16 Digit Number';
       });
       return false;
     }
@@ -108,8 +104,7 @@ class _CardPaymentPageState extends State<CardPaymentPage> {
 
   void _reloadBalance() {
     if (_validateTac()) {
-      // Assuming TAC validation is successful and balance reload is successful
-      Navigator.of(context).pop(true); // Return to the previous page with result
+      Navigator.of(context).pop(true);
     }
   }
 
@@ -147,90 +142,111 @@ class _CardPaymentPageState extends State<CardPaymentPage> {
         title: Text('Card Payment'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(10),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            TextField(
-              controller: _cardNumberController,
-              keyboardType: TextInputType.number,
-              maxLength: 16,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
-              decoration: InputDecoration(
-                labelText: 'Enter card number',
-                errorText: _cardErrorMessage,
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _expiryDateController,
-              keyboardType: TextInputType.datetime,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
-                LengthLimitingTextInputFormatter(7),
-              ],
-              decoration: InputDecoration(
-                labelText: 'Expiry Date (MM/YYYY)',
-                errorText: _expiryErrorMessage,
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _cvvController,
-              keyboardType: TextInputType.number,
-              maxLength: 3,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
-              decoration: InputDecoration(
-                labelText: 'CVV',
-                errorText: _cvvErrorMessage,
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _savePaymentMethod,
-              child: Text('Submit'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                textStyle: TextStyle(fontSize: 18),
-              ),
-            ),
-            if (_isTacFieldVisible) ...[
-              SizedBox(height: 20),
-              TextField(
-                controller: _tacController,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                decoration: InputDecoration(
-                  labelText: 'Enter TAC',
-                  errorText: _tacErrorMessage,
-                  border: OutlineInputBorder(),
+            Card(
+              margin: EdgeInsets.symmetric(vertical: 10),
+              elevation: 5,
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _cardNumberController,
+                      keyboardType: TextInputType.number,
+                      maxLength: 16,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      decoration: InputDecoration(
+                        labelText: 'Enter card number',
+                        errorText: _cardErrorMessage,
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    TextField(
+                      controller: _expiryDateController,
+                      keyboardType: TextInputType.datetime,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
+                        LengthLimitingTextInputFormatter(7),
+                      ],
+                      decoration: InputDecoration(
+                        labelText: 'Expiry Date (MM/YYYY)',
+                        errorText: _expiryErrorMessage,
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    TextField(
+                      controller: _cvvController,
+                      keyboardType: TextInputType.number,
+                      maxLength: 3,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      decoration: InputDecoration(
+                        labelText: 'CVV',
+                        errorText: _cvvErrorMessage,
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _savePaymentMethod,
+                      child: Text('Submit'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                        textStyle: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _reloadBalance,
-                child: Text('Reload Balance'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                  textStyle: TextStyle(fontSize: 18),
+            ),
+            if (_isTacFieldVisible)
+              Card(
+                margin: EdgeInsets.symmetric(vertical: 10),
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _tacController,
+                        keyboardType: TextInputType.number,
+                        maxLength: 6,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: InputDecoration(
+                          labelText: 'Enter TAC',
+                          errorText: _tacErrorMessage,
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _reloadBalance,
+                        child: Text('Reload Balance'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                          textStyle: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ]
           ],
         ),
       ),

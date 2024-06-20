@@ -42,7 +42,17 @@ class FeedbackViewModel extends ChangeNotifier {
     if (contactInfoController.text.isEmpty) {
       contactInfoError = 'Contact Info Required';
       isValid = false;
-    } else {
+    }
+    else if(!contactInfoController.text.startsWith('01')){
+        contactInfoError='Contact Must Start with 01';
+        isValid=false;
+    }
+    else if (contactInfoController.text.length < 10 || contactInfoController.text.length > 11) {
+      contactInfoError = 'Correct Contact Number Format Required';
+      isValid = false;
+    }
+
+    else {
       contactInfoError = null;
     }
 

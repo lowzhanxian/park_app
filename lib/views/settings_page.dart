@@ -1,14 +1,27 @@
 import 'package:flutter/material.dart';
-// import 'vehicle_page.dart';
 import 'profile_management_page.dart';
 import 'wallet_page.dart';
+import '../helpers/database_help.dart';
+import '../models/user.dart';
 
-
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   final int userId;
 
   // Constructor with required userId parameter
   SettingsPage({required this.userId});
+
+  @override
+  _SettingsPageState createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  late Future<User?> _userFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _userFuture = Db_Helper().getUserById(widget.userId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,62 +32,64 @@ class SettingsPage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+        child: FutureBuilder<User?>(
+          future: _userFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
+            else if (!snapshot.hasData || snapshot.data == null) {
+              return Center(child: Text('User not found'));
+            }
+            else {
+              User user = snapshot.data!;
+              return Column(
 
-            // Button for profile management
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ProfileManagementPage(userId: userId)),
-                  );
-                },
-                icon: Icon(Icons.person, color: Colors.white),
-                label: Text(
-                  'Profile Management',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                children: [
+                  // username card
+                  Card(
+                    margin: EdgeInsets.only(bottom: 20),
+                    child: ListTile(
+                      tileColor: Colors.white,
+                      leading: Icon(Icons.person, size: 40,color: Colors.black,),
+                      title: Text(user.username, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.black54)),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit, color: Colors.deepOrange),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ProfileManagementPage(userId: widget.userId)),
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                ),
-              ),
-            ),
 
-            SizedBox(height: 25),
-            // Button for wallet
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => WalletPage(userId: userId)),
-                  );
-                },
-                icon: Icon(Icons.account_balance_wallet, color: Colors.white),
-                label: Text(
-                  'Wallet',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                  // Wallet button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => WalletPage(userId: widget.userId)),
+                        );
+                      },
+                      icon: Icon(Icons.account_balance_wallet, color: Colors.grey),
+                      label: Text(
+                        'Wallet',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white12, foregroundColor: Colors.white, padding: EdgeInsets.symmetric(vertical: 15),
+                      ),
+                    ),
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                ),
-              ),
-            ),
-          ],
+                ],
+              );
+            }
+          },
         ),
       ),
     );

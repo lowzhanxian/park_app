@@ -15,46 +15,85 @@ class CompoundPaymentPage extends StatelessWidget {
       create: (_) => CompoundPaymentViewModel(userId),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Pay Compound'),
+          title: Text('Your Compounds'),
         ),
+
         body: Consumer<CompoundPaymentViewModel>(
           builder: (context, viewModel, child) {
             if (viewModel.errorMessage != null) {
               return Center(child: Text(viewModel.errorMessage!));
             }
+            return
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text('Ongoing Compounds', style: TextStyle(fontSize: 20,color: Colors.red,),
+                  ),
 
-            return ListView(
-              children: [
-                ListTile(
-                  title: Text('Unpaid Compounds'),
-                ),
-                ...viewModel.compounds.map((compound) => ListTile(
-                  title: Text(compound.description),
-                  subtitle: Text('RM${compound.amount.toStringAsFixed(2)}'),
-                  trailing: ElevatedButton(
-                    onPressed: () => _confirmPayment(context, viewModel, compound),
-                    child: Text('Pay'),
+                  SizedBox(height: 10),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: viewModel.compounds.length,
+                      itemBuilder: (context, index) {
+                        Compound compound = viewModel.compounds[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 10),//margin between
+                          child: ListTile(
+                            title: Text(compound.description),
+                            subtitle: Text('RM${compound.amount.toStringAsFixed(2)}'),
+                            trailing: ElevatedButton(
+                              style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                              ),
+                              onPressed: () => _confirmPayment(context, viewModel, compound),
+                              child: Text(
+                                'Pay',
+                                style: TextStyle(fontSize: 20, color: Colors.red),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                )),
-                Divider(),
-                ListTile(
-                  title: Text('Paid Compounds'),
-                ),
-                ...viewModel.paidCompounds.map((compound) => ListTile(
-                  title: Text(compound.description),
-                  subtitle: Text('RM${compound.amount.toStringAsFixed(2)}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('Paid on: ${compound.date}'),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () => _confirmDeletion(context, viewModel, compound),
-                      ),
-                    ],
+                  Divider(),
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(
+                      'Paid Compounds',
+                      style: TextStyle(color: Colors.green,fontSize: 20),
+                    ),
                   ),
-                )),
-              ],
+                  SizedBox(height: 10),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: viewModel.paidCompounds.length,
+                      itemBuilder: (context, index) {
+                        Compound compound = viewModel.paidCompounds[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 10),
+                          child: ListTile(
+                            title: Text(compound.description),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('RM${compound.amount.toStringAsFixed(2)}',),
+                                Text('Paid on: ${compound.date}'),
+                              ],
+                            ),
+                            trailing: IconButton(
+                              icon: Icon(Icons.delete,color: Colors.red,size: 30,),
+                              onPressed: () => _confirmDeletion(context, viewModel, compound),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         ),
@@ -68,20 +107,20 @@ class CompoundPaymentPage extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Confirm Payment'),
-          content: Text('Are you sure you want to pay for this compound?'),
+          content: Text('Are you sure you want to pay this compound?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text('Cancel'),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
                 Navigator.of(context).pop();
                 bool success = await viewModel.payCompound(userId, compound);
-                _showResultDialog(context, success, 'Compound paid successfully!', viewModel.errorMessage ?? 'Insufficient balance. Please top up your wallet.');
+                _showResultDialog(context, success, 'Payment Successful!', viewModel.errorMessage ?? 'Not Enough Balance in Wallet');
                 onBalanceUpdated();
               },
-              child: Text('Confirm'),
+              child: Text('Pay'),
             ),
           ],
         );
@@ -101,13 +140,13 @@ class CompoundPaymentPage extends StatelessWidget {
               onPressed: () => Navigator.of(context).pop(),
               child: Text('Cancel'),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
                 Navigator.of(context).pop();
                 await viewModel.deletePaidCompound(compound.id!);
                 _showResultDialog(context, true, 'Compound deleted successfully!', 'Failed to delete compound.');
               },
-              child: Text('Confirm'),
+              child: Text('Delete'),
             ),
           ],
         );

@@ -30,17 +30,19 @@ class PaymentMethodPage extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ElevatedButton(
-                onPressed: () => _selectPaymentMethod(context),
-                child: Text('Debit/Credit Card'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                  textStyle: TextStyle(fontSize: 18),
+              Card(
+                margin: EdgeInsets.symmetric(vertical: 10),
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: ListTile(
+                  leading: Icon(Icons.credit_card_outlined, color: Colors.white, size: 40),
+                  title: Text('Debit/Credit Card', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  trailing: Icon(Icons.arrow_forward_ios, color: Colors.white),
+                  onTap: () => _selectPaymentMethod(context),
                 ),
               ),
             ],

@@ -24,12 +24,24 @@ class VehicleViewModel extends ChangeNotifier {
     return validCharacters.hasMatch(plateNum);
   }
 
+  Future<bool> _vehicleExists(int userId, String plateNum) async {
+    List<Vehicle> existingVehicles = await _dbHelper.getVehicleDetails(userId);
+    return existingVehicles.any((vehicle) => vehicle.vehiclePlateNum == plateNum);
+  }
+
   Future<void> addVehicle(int userId) async {
     if (vehiclePlateNumController.text.isEmpty || vehicleNameController.text.isEmpty) {
-      errorMessage = 'Vehicle details cannot be empty';
-    } else if (!_isValidPlateNumber(vehiclePlateNumController.text)) {
+      errorMessage = 'Vehicle Details Required';
+    }
+    else if (!_isValidPlateNumber(vehiclePlateNumController.text)) {
       errorMessage = 'Vehicle plate number can only contain alphabets and numbers';
-    } else {
+    }
+
+    //check car validation
+    else if (await _vehicleExists(userId, vehiclePlateNumController.text)) {
+      errorMessage = 'Car Plate Exists';
+    }
+    else {
       try {
         Vehicle newVehicle = Vehicle(
           userId: userId,
@@ -48,10 +60,16 @@ class VehicleViewModel extends ChangeNotifier {
 
   Future<void> updateVehicle(Vehicle vehicle) async {
     if (vehiclePlateNumController.text.isEmpty || vehicleNameController.text.isEmpty) {
-      errorMessage = 'Vehicle details cannot be empty';
-    } else if (!_isValidPlateNumber(vehiclePlateNumController.text)) {
+      errorMessage = 'Vehicle Details Required';
+    }
+    else if (!_isValidPlateNumber(vehiclePlateNumController.text)) {
       errorMessage = 'Vehicle plate number can only contain alphabets and numbers';
-    } else {
+    }
+    //check car validation
+    else if (await _vehicleExists(vehicle.userId, vehiclePlateNumController.text) && vehiclePlateNumController.text != vehicle.vehiclePlateNum) {
+      errorMessage = 'Car Plate Exists';
+    }
+    else {
       try {
         vehicle.vehiclePlateNum = vehiclePlateNumController.text;
         vehicle.vehicleName = vehicleNameController.text;

@@ -22,6 +22,10 @@ class ParkingHistoryPage extends StatelessWidget {
               return Center(child: Text(viewModel.errorMessage!));
             }
 
+            if (viewModel.parkingHistory.isEmpty) {
+              return Center(child: Text('Not Available History'));
+            }
+
             return ListView.builder(
               itemCount: viewModel.parkingHistory.length,
               itemBuilder: (context, index) {
@@ -41,7 +45,7 @@ class ParkingHistoryPage extends StatelessWidget {
                       ],
                     ),
                     trailing: IconButton(
-                      icon: Icon(Icons.delete),
+                      icon: Icon(Icons.delete, color: Colors.red, size: 30),
                       onPressed: () {
                         _confirmDelete(context, viewModel, parking.id!, userId);
                       },
@@ -62,7 +66,7 @@ class ParkingHistoryPage extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Confirm Delete'),
-          content: Text('Are you sure you want to delete this record?'),
+          content: Text('Confirm delete this history?'),
           actions: [
             TextButton(
               child: Text('Cancel'),

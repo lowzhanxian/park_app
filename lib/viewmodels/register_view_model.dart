@@ -59,13 +59,16 @@ class RegisterViewModel extends ChangeNotifier {
     if (contact_numberController.text.isEmpty) {
       contact_number_validate = 'Contact Number Required';
       isValid = false;
-    } else if (!contact_numberController.text.startsWith('01')) {
+    }
+    else if (!contact_numberController.text.startsWith('01')) {
       contact_number_validate = 'Contact Number must start with 01';
       isValid = false;
-    } else if (contact_numberController.text.length < 10 || contact_numberController.text.length > 11) {
+    }
+    else if (contact_numberController.text.length < 10 || contact_numberController.text.length > 11) {
       contact_number_validate = 'Correct Contact Number Format Required';
       isValid = false;
-    } else {
+    }
+    else {
       contact_number_validate = null;
     }
 

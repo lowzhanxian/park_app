@@ -14,27 +14,33 @@ class VehiclePage extends StatelessWidget {
       create: (_) => VehicleViewModel()..fetchVehicles(userId),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Your Vehicles'),
+          title: Text('Manage Your Vehicles'),
         ),
         body: Consumer<VehicleViewModel>(
           builder: (context, viewModel, child) {
             return Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(15.0),
+                  padding: const EdgeInsets.all(20),
                   child: ElevatedButton.icon(
                     onPressed: () {
                       //showing dialog
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: Text('Add Vehicle'),
+                          title:
+                          Row(
+                            children: [
+                              Icon(Icons.add, color: Colors.red),//icon add and color red
+                              SizedBox(width: 8), Text('Vehicle'),
+                            ],
+                          ),
                           content: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               TextField(
                                 controller: viewModel.vehiclePlateNumController,
-                                decoration: InputDecoration(labelText: 'Vehicle Plate Number'),
+                                decoration: InputDecoration(labelText: 'Car Plate'),
                               ),
                               TextField(
                                 controller: viewModel.vehicleNameController,
@@ -60,11 +66,12 @@ class VehiclePage extends StatelessWidget {
                         ),
                       );
                     },
-                    icon: Icon(Icons.add),
-                    label: Text('Add Vehicle'),
+                    icon: Icon(Icons.car_rental,color: Colors.red,),
+                    label: Text('Add Vehicle',
+                    style: TextStyle(color: Colors.white),),
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                      textStyle: TextStyle(fontSize: 18),
+                      padding: EdgeInsets.symmetric(vertical:15 , horizontal: 20),
+                      textStyle: TextStyle(fontSize: 20),
                     ),
                   ),
                 ),
@@ -78,7 +85,7 @@ class VehiclePage extends StatelessWidget {
                   ),
                 Expanded(
                   child: GridView.builder(
-                    padding: EdgeInsets.all(10),
+                    padding: EdgeInsets.all(15),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 5,
@@ -94,13 +101,13 @@ class VehiclePage extends StatelessWidget {
                         ),
                         child: InkWell(
                           onTap: () {
-                            // Handle on tap if needed
+
                           },
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.directions_car_sharp, size: 50, color: Colors.blue),
-                              SizedBox(height: 10),
+                              SizedBox(height: 15),
                               Text(
                                 vehicle.vehiclePlateNum,
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
