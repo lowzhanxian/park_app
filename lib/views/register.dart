@@ -212,23 +212,6 @@ class registerPage extends StatelessWidget {
                         ),
                       ),
                     ),
-
-
-                    SizedBox(height: 25),
-                    Text(
-                      'Registered Users:',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    //------for test to display the data
-                    ...viewModel.users.map((user) => ListTile(
-                      title: Text(user.full_name, style: TextStyle(color: Colors.white)),
-                      subtitle: Text(user.username, style: TextStyle(color: Colors.white)),
-                    )).toList(),
                   ],
                 );
               },
